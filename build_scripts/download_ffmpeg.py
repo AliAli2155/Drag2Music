@@ -57,7 +57,7 @@ def download_with_retry(url: str, dest_path: str, max_retries: int = 3, timeout:
     headers = {"User-Agent": "TuneFetch-Installer/1.0 (+https://github.com/AliAli2155/TuneFetch)"}
     for attempt in range(1, max_retries + 1):
         try:
-            print(f"  Attempt {attempt}/{max_retries} → {url}")
+            print(f"  Attempt {attempt}/{max_retries} -> {url}")
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 total = int(resp.headers.get("Content-Length", 0))
