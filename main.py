@@ -1,6 +1,20 @@
 # -*- coding: utf-8 -*-
+# ── PyInstaller frozen-bundle ffmpeg path injection ──────────────────────────
+import sys as _sys, os as _os
+if getattr(_sys, 'frozen', False):
+    _base = _sys._MEIPASS
+    if _sys.platform == 'win32':
+        _ffmpeg = _os.path.join(_base, 'ffmpeg_bins', 'windows', 'ffmpeg.exe')
+    elif _sys.platform == 'darwin':
+        _ffmpeg = _os.path.join(_base, 'ffmpeg_bins', 'macos', 'ffmpeg')
+    else:
+        _ffmpeg = _os.path.join(_base, 'ffmpeg_bins', 'linux', 'ffmpeg')
+    _os.environ['PATH'] = _os.path.dirname(_ffmpeg) + _os.pathsep + _os.environ.get('PATH', '')
+    _os.environ['FFMPEG_BINARY'] = _ffmpeg
+del _sys, _os
+# ─────────────────────────────────────────────────────────────────────────────
 import customtkinter as ctk
-import os, json, requests, threading
+import sys, os, json, requests, threading
 from tkinter import filedialog
 from PIL import Image
 from io import BytesIO
@@ -26,11 +40,9 @@ class TuneFetch(UISetupMixin, PlayerMixin, DownloaderMixin, LyricsMixin, Convert
 
     def __init__(self):
         self.history_file    = os.path.join(os.path.expanduser("~"), ".tunefetch_history.json")
-        self.download_path   = os.path.join(os.path.expanduser("~"), "Desktop", "TuneFetch_Downloads")
+        self.download_path   = os.path.join(os.path.expanduser("~"), "Downloads")
         self.temp_audio_base = os.path.join(os.path.expanduser("~"), "tf_preview")
         self.temp_audio      = self.temp_audio_base + ".mp3"
-        if not os.path.exists(self.download_path):
-            os.makedirs(self.download_path)
 
         from core.translations import LANGUAGES as _LANGS
         saved_data = self.load_data_from_disk()
@@ -57,8 +69,19 @@ class TuneFetch(UISetupMixin, PlayerMixin, DownloaderMixin, LyricsMixin, Convert
 
         super().__init__()
 
-        self.title("TuneFetch: Infinity Studio 💎")
+        self.title("TuneFetch: Infinity Studio")
         self.geometry("1200x1040")
+
+        # Window icon — works both in dev mode and as frozen bundle
+        _here = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
+        for _ico in (os.path.join(_here, 'assets', 'icon.ico'),
+                     os.path.join(_here, 'TuneFetch.ico')):
+            if os.path.exists(_ico):
+                try:
+                    self.iconbitmap(_ico)
+                except Exception:
+                    pass
+                break
         self.minsize(900, 720)
         self.configure(fg_color=C["bg"])
         self.grid_columnconfigure(0, weight=1)

@@ -1,3 +1,4 @@
+import os
 import threading
 import datetime
 import yt_dlp
@@ -41,6 +42,7 @@ class DownloaderMixin:
         return f"{bps / 1024:.0f} KB/s"
 
     def run_download(self):
+        os.makedirs(self.download_path, exist_ok=True)
         mode    = self.mode_menu.get()
         quality = self.quality_combo.get()
         fmt     = mode.split()[-1].upper()

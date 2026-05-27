@@ -24,6 +24,11 @@ class UISetupMixin:
         self.lang_combo.pack(side="right", padx=5)
         self.lang_combo.set(self.current_lang)
 
+        self.lbl_made_by = ctk.CTkLabel(
+            self.top_bar, text="Made by Ali A.",
+            font=("Arial", 11), text_color=C["dim"])
+        self.lbl_made_by.pack(side="left", padx=5)
+
         # ── Logo ─────────────────────────────────────────────
         logo_row = ctk.CTkFrame(self.main_scroll, fg_color="transparent")
         logo_row.grid(row=1, column=0, pady=(0, 4))
@@ -304,14 +309,18 @@ class UISetupMixin:
             self.conv_qual_frame.pack_forget()
 
     def _setup_scroll_isolation(self):
-        def _lock(inner):
-            return lambda _: inner._parent_canvas.bind_all(
-                "<MouseWheel>", inner._mouse_button_scroll)
+        def _make_scroll(canvas):
+            return lambda e: canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
 
-        def _unlock():
-            return lambda _: self.main_scroll._parent_canvas.bind_all(
-                "<MouseWheel>", self.main_scroll._mouse_button_scroll)
+        def _bind_inner(frame):
+            scroll_fn = _make_scroll(frame._parent_canvas)
+            def on_enter(_):
+                frame._parent_canvas.bind_all("<MouseWheel>", scroll_fn)
+            def on_leave(_):
+                main_fn = _make_scroll(self.main_scroll._parent_canvas)
+                self.main_scroll._parent_canvas.bind_all("<MouseWheel>", main_fn)
+            frame.bind("<Enter>", on_enter)
+            frame.bind("<Leave>", on_leave)
 
         for frame in (self.lyrics_frame, self.lib_scroll):
-            frame.bind("<Enter>", _lock(frame))
-            frame.bind("<Leave>", _unlock())
+            _bind_inner(frame)

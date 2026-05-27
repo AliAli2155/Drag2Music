@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# TuneFetch: Infinity Studio — Linux Build Script
+# Usage: chmod +x build_scripts/build_linux.sh && ./build_scripts/build_linux.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+
+echo "============================================================"
+echo " TuneFetch: Infinity Studio — Linux Build"
+echo "============================================================"
+echo "[INFO] Project root: $PROJECT_ROOT"
+echo
+
+# ── Step 1: Install Python dependencies ─────────────────────────────────────
+echo "[STEP 1/4] Installing Python dependencies..."
+pip3 install -r requirements.txt
+echo
+
+# ── Step 2: Set up assets ────────────────────────────────────────────────────
+echo "[STEP 2/4] Setting up assets (icons)..."
+python3 build_scripts/setup_assets.py
+echo
+
+# ── Step 3: Download Linux ffmpeg ────────────────────────────────────────────
+echo "[STEP 3/4] Downloading Linux ffmpeg binary..."
+python3 build_scripts/download_ffmpeg.py --platform linux
+echo
+
+# ── Step 4: PyInstaller ──────────────────────────────────────────────────────
+echo "[STEP 4/5] Running PyInstaller (onedir)..."
+pyinstaller tunefetch.spec --clean --noconfirm
+echo
+
+# ── Step 5: AppImage + .deb ──────────────────────────────────────────────────
+echo "[STEP 5/5] Creating AppImage and .deb package..."
+chmod +x installer/linux/create_appimage.sh
+bash installer/linux/create_appimage.sh
+echo
+
+echo "============================================================"
+echo " Build complete!"
+echo " App dir  : dist/TuneFetch/"
+echo " AppImage : TuneFetch-x86_64.AppImage"
+echo " Deb pkg  : tunefetch_1.0.0_amd64.deb"
+echo "============================================================"
