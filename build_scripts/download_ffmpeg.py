@@ -23,7 +23,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FFMPEG_URLS = {
     "windows": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
     "macos":   "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip",
-    "linux":   "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz",
+    "linux":   "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz",
 }
 
 DEST_DIRS = {
@@ -135,15 +135,34 @@ def extract_macos_ffmpeg(archive_path: str, dest_dir: str) -> None:
 
 def extract_linux_ffmpeg(archive_path: str, dest_dir: str) -> None:
     print("  Extracting ffmpeg from tar.xz archive...")
+    # Validate file header before attempting extraction
+    with open(archive_path, "rb") as fh:
+        magic = fh.read(6)
+    if magic[:2] == b'\xfd7' or magic[:6] == b'\xfd7zXZ\x00':
+        mode = "r:xz"
+    elif magic[:3] == b'\x1f\x8b\x08':
+        mode = "r:gz"
+    elif magic[:5] == b'BZh91':
+        mode = "r:bz2"
+    else:
+        raise RuntimeError(
+            f"Downloaded file does not look like a tar archive (magic={magic.hex()}). "
+            "The server may have returned an error page instead of the binary."
+        )
+
     dest_file = os.path.join(dest_dir, "ffmpeg")
-    with tarfile.open(archive_path, "r:xz") as tf:
+    with tarfile.open(archive_path, mode) as tf:
+        # BtbN layout: ffmpeg-master-.../bin/ffmpeg
+        # johnvansickle layout: ffmpeg-*-static/ffmpeg
         candidate = None
         for member in tf.getmembers():
-            if os.path.basename(member.name) == "ffmpeg" and member.isfile():
-                candidate = member
-                break
+            bname = os.path.basename(member.name)
+            if bname == "ffmpeg" and member.isfile():
+                # prefer the one in a bin/ subdirectory (BtbN)
+                if candidate is None or "/bin/" in member.name:
+                    candidate = member
         if candidate is None:
-            raise RuntimeError("ffmpeg binary not found inside the tar.xz archive")
+            raise RuntimeError("ffmpeg binary not found inside the tar archive")
         fobj = tf.extractfile(candidate)
         if fobj is None:
             raise RuntimeError("Could not open ffmpeg entry in archive")
