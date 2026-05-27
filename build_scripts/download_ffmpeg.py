@@ -109,7 +109,7 @@ def extract_windows_ffmpeg(archive_path: str, dest_dir: str) -> None:
                 if not data:
                     break
                 dst.write(data)
-    print(f"  Saved → {dest_file}")
+    print(f"  Saved -> {dest_file}")
 
 
 def extract_macos_ffmpeg(archive_path: str, dest_dir: str) -> None:
@@ -130,7 +130,7 @@ def extract_macos_ffmpeg(archive_path: str, dest_dir: str) -> None:
                     break
                 dst.write(data)
     _set_executable(dest_file)
-    print(f"  Saved → {dest_file}")
+    print(f"  Saved -> {dest_file}")
 
 
 def extract_linux_ffmpeg(archive_path: str, dest_dir: str) -> None:
@@ -154,7 +154,7 @@ def extract_linux_ffmpeg(archive_path: str, dest_dir: str) -> None:
                     break
                 dst.write(data)
     _set_executable(dest_file)
-    print(f"  Saved → {dest_file}")
+    print(f"  Saved -> {dest_file}")
 
 
 def download_platform(platform: str) -> None:
