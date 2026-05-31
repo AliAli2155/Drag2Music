@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 TRANSLATIONS = {
     "English": {
+        "format_label":       "Format",
         "tab_download":       "📥 Download",
         "tab_converter":      "🔄 Converter",
         "tab_library":        "🎶 Library",
@@ -41,6 +42,7 @@ TRANSLATIONS = {
         "mode_section":       "APPEARANCE",
     },
     "Türkçe": {
+        "format_label":       "Format",
         "tab_download":       "📥 İndir",
         "tab_converter":      "🔄 Dönüştür",
         "tab_library":        "🎶 Kütüphane",
@@ -81,6 +83,7 @@ TRANSLATIONS = {
         "mode_section":       "GÖRÜNÜM",
     },
     "Español": {
+        "format_label":       "Formato",
         "tab_download":       "📥 Descargar",
         "tab_converter":      "🔄 Convertir",
         "tab_library":        "🎶 Biblioteca",
@@ -121,6 +124,7 @@ TRANSLATIONS = {
         "mode_section":       "APARIENCIA",
     },
     "Français": {
+        "format_label":       "Format",
         "tab_download":       "📥 Télécharger",
         "tab_converter":      "🔄 Convertir",
         "tab_library":        "🎶 Bibliothèque",
@@ -161,6 +165,7 @@ TRANSLATIONS = {
         "mode_section":       "APPARENCE",
     },
     "Deutsch": {
+        "format_label":       "Format",
         "tab_download":       "📥 Herunterladen",
         "tab_converter":      "🔄 Konverter",
         "tab_library":        "🎶 Bibliothek",
@@ -201,6 +206,7 @@ TRANSLATIONS = {
         "mode_section":       "DARSTELLUNG",
     },
     "Português": {
+        "format_label":       "Formato",
         "tab_download":       "📥 Baixar",
         "tab_converter":      "🔄 Converter",
         "tab_library":        "🎶 Biblioteca",
@@ -241,6 +247,7 @@ TRANSLATIONS = {
         "mode_section":       "APARÊNCIA",
     },
     "Italiano": {
+        "format_label":       "Formato",
         "tab_download":       "📥 Scarica",
         "tab_converter":      "🔄 Converti",
         "tab_library":        "🎶 Libreria",
@@ -281,6 +288,7 @@ TRANSLATIONS = {
         "mode_section":       "ASPETTO",
     },
     "Русский": {
+        "format_label":       "Формат",
         "tab_download":       "📥 Скачать",
         "tab_converter":      "🔄 Конвертер",
         "tab_library":        "🎶 Библиотека",
@@ -321,6 +329,7 @@ TRANSLATIONS = {
         "mode_section":       "ВНЕШНИЙ ВИД",
     },
     "Ελληνικά": {
+        "format_label":       "Μορφή",
         "tab_download":       "📥 Λήψη",
         "tab_converter":      "🔄 Μετατροπή",
         "tab_library":        "🎶 Βιβλιοθήκη",
@@ -361,6 +370,7 @@ TRANSLATIONS = {
         "mode_section":       "ΕΜΦΑΝΙΣΗ",
     },
     "日本語": {
+        "format_label":       "形式",
         "tab_download":       "📥 DL",
         "tab_converter":      "🔄 変換",
         "tab_library":        "🎶 ライブラリ",
@@ -401,6 +411,7 @@ TRANSLATIONS = {
         "mode_section":       "外観",
     },
     "中文": {
+        "format_label":       "格式",
         "tab_download":       "📥 下载",
         "tab_converter":      "🔄 转换",
         "tab_library":        "🎶 资料库",

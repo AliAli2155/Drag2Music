@@ -32,13 +32,17 @@ class ConverterMixin:
             base = os.path.splitext(os.path.basename(src))[0]
             out  = os.path.join(self.download_path, f"{base}_converted.{target_fmt}")
 
-            cmd = ["ffmpeg", "-y", "-i", src]
+            _fb = os.environ.get('FFMPEG_BINARY', '').strip()
+            ffmpeg = _fb if _fb and os.path.exists(_fb) else 'ffmpeg'
+            cmd    = [ffmpeg, "-y", "-i", src]
+
+            quality_raw = self.conv_quality_combo.get()
+            quality_kbps = quality_raw.split()[0] if quality_raw.split() else "192"
+
             if target_fmt == "mp3":
-                q = self.conv_quality_combo.get().split()[0]
-                cmd += ["-codec:a", "libmp3lame", "-b:a", f"{q}k"]
+                cmd += ["-codec:a", "libmp3lame", "-b:a", f"{quality_kbps}k"]
             elif target_fmt == "aac":
-                q = self.conv_quality_combo.get().split()[0]
-                cmd += ["-codec:a", "aac", "-b:a", f"{q}k"]
+                cmd += ["-codec:a", "aac", "-b:a", f"{quality_kbps}k"]
             elif target_fmt == "ogg":
                 cmd += ["-codec:a", "libvorbis"]
             elif target_fmt == "flac":
@@ -49,13 +53,18 @@ class ConverterMixin:
                 cmd += ["-codec:v", "copy", "-codec:a", "aac"]
             cmd.append(out)
 
-            subprocess.run(cmd, check=True, capture_output=True)
+            os.makedirs(self.download_path, exist_ok=True)
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr[-200:] if result.stderr else "ffmpeg error")
+
             out_name = os.path.basename(out)
             self.after(0, lambda n=out_name: self.conv_status_label.configure(
                 text=f"{self.t('conv_saved')}: {n}",
                 text_color=self.current_theme_color))
         except Exception as e:
-            err = str(e)[:80]
+            err = str(e)[:120]
+            print(f"[Converter] Error: {err}")
             self.after(0, lambda m=err: self.conv_status_label.configure(
                 text=f"{self.t('conv_error')}: {m}", text_color="#e74c3c"))
         self.after(0, lambda: self.btn_conv_run.configure(

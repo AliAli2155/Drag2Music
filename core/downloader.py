@@ -1,74 +1,127 @@
 import os
-import threading
+import time
+import queue
 import datetime
+import threading
 import yt_dlp
-from plyer import notification
-from .constants import THUMBNAIL_EMBED_FMTS
+
+from .constants import THUMBNAIL_EMBED_FMTS, C
+
+try:
+    from plyer import notification as _plyer_notification
+except Exception:
+    _plyer_notification = None
 
 
 class DownloaderMixin:
 
-    def start_download_thread(self):
-        self.btn_download.configure(state="disabled", text=self.t("processing"))
-        self.dl_progress.set(0)
-        self.dl_progress.grid()
-        self.dl_status_lbl.configure(text=self.t("dl_starting"))
-        self.dl_status_lbl.grid()
-        threading.Thread(target=self.run_download, daemon=True).start()
+    # ── Queue entry point ─────────────────────────────────────────────────────
 
-    def _dl_hook(self, d):
-        if d['status'] == 'downloading':
-            total    = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
-            done     = d.get('downloaded_bytes', 0)
-            speed    = d.get('speed') or 0
-            eta      = d.get('eta') or 0
-            pct      = done / total if total else 0
-            self.after(0, lambda p=pct: self.dl_progress.set(p))
-            speed_str = self._fmt_speed(speed)
-            pct_str   = f"{pct * 100:.0f}%  " if total else ""
-            eta_str   = f"  •  ETA {eta}s" if eta else ""
-            status    = f"{pct_str}{speed_str}{eta_str}"
-            self.after(0, lambda s=status: self.dl_status_lbl.configure(text=s))
-        elif d['status'] == 'finished':
-            self.after(0, lambda: self.dl_progress.set(1.0))
-            self.after(0, lambda: self.dl_status_lbl.configure(text=self.t("dl_embedding")))
+    def enqueue_current(self):
+        if self._pending_playlist is None and not self.current_video_url:
+            return
+        self.btn_download.configure(state="disabled")
 
-    @staticmethod
-    def _fmt_speed(bps: float) -> str:
-        if bps <= 0:
-            return ""
-        if bps >= 1_048_576:
-            return f"{bps / 1_048_576:.1f} MB/s"
-        return f"{bps / 1024:.0f} KB/s"
+        with self._queue_lock:
+            if self._pending_playlist is not None:
+                for item in self._pending_playlist:
+                    self.queue_items.append(item)
+                    self.dl_queue.put(item)
+                self._pending_playlist = None
+            else:
+                fmt     = self.mode_menu.get().split()[-1].upper()
+                quality = self.quality_combo.get()
+                item = {
+                    "url": self.current_video_url,
+                    "title": self.current_video_title,
+                    "fmt": fmt, "quality": quality,
+                    "status": "pending", "progress": 0,
+                }
+                self.queue_items.append(item)
+                self.dl_queue.put(item)
 
-    def run_download(self):
+        self.after(0, self._refresh_queue_ui)
+
+        if not self.queue_worker_running:
+            self.queue_worker_running = True
+            threading.Thread(target=self._queue_worker, daemon=True).start()
+
+    # ── Worker thread ─────────────────────────────────────────────────────────
+
+    def _queue_worker(self):
+        total = self.dl_queue.qsize()
+        done  = 0
+
+        if total > 1:
+            self.after(0, lambda t=total: self._pl_bar_show(0, t))
+
+        while True:
+            try:
+                item = self.dl_queue.get(timeout=3.0)
+            except queue.Empty:
+                break
+
+            item["status"]   = "downloading"
+            item["progress"] = 0
+            self.after(0, self._refresh_queue_ui)
+
+            try:
+                self._run_queued_download(item)
+                item["status"]   = "done"
+                item["progress"] = 100
+                self.download_history.append({
+                    "name":   item["title"],
+                    "time":   datetime.datetime.now().strftime("%H:%M"),
+                    "format": item["fmt"],
+                })
+                self.save_data_to_disk()
+                self.after(0, self.refresh_library_ui)
+                try:
+                    if _plyer_notification:
+                        _plyer_notification.notify(
+                            title="TuneFetch ✅",
+                            message=f"{item['title'][:80]}\n{item['fmt']} • {item['quality']}")
+                except Exception:
+                    pass
+            except Exception as e:
+                print(f"[Queue] Download error for '{item.get('title')}': {e}")
+                item["status"] = "error"
+
+            done += 1
+            if total > 1:
+                self.after(0, lambda d=done, t=total: self._pl_bar_show(d, t))
+
+            self.after(0, self._refresh_queue_ui)
+            self.dl_queue.task_done()
+
+        self.queue_worker_running = False
+        self.after(0, lambda: self.progress_bar.set(0))
+        self.after(0, lambda: self.lbl_speed.configure(text=" "))
+        self.after(0, self._pl_bar_hide)
+
+    # ── Download logic ────────────────────────────────────────────────────────
+
+    def _run_queued_download(self, item):
         os.makedirs(self.download_path, exist_ok=True)
-        mode    = self.mode_menu.get()
-        quality = self.quality_combo.get()
-        fmt     = mode.split()[-1].upper()
-
-        vid_info  = getattr(self, 'current_video_info', {})
-        meta_args = []
-        for ffkey, val in [
-            ('title',  vid_info.get('title', '')),
-            ('artist', vid_info.get('uploader') or vid_info.get('channel') or ''),
-            ('album',  vid_info.get('album') or vid_info.get('playlist_title') or ''),
-            ('date',   (vid_info.get('upload_date') or '')[:4]),
-        ]:
-            if val:
-                meta_args += ['-metadata', f'{ffkey}={val}']
+        fmt        = item["fmt"]
+        quality    = item["quality"]
+        ffmpeg_dir = os.environ.get('FFMPEG_DIR', '')
 
         base_opts = {
-            'outtmpl':            f'{self.download_path}/%(title)s.%(ext)s',
-            'quiet':              True,
-            'progress_hooks':     [self._dl_hook],
-            'writethumbnail':     fmt in THUMBNAIL_EMBED_FMTS,
-            'postprocessor_args': {'default': meta_args} if meta_args else {},
+            'outtmpl':                       f'{self.download_path}/%(title)s.%(ext)s',
+            'quiet':                         True,
+            'progress_hooks':                [self._ydl_hook],
+            'writethumbnail':                fmt in THUMBNAIL_EMBED_FMTS,
+            'noprogress':    True,
+            'ignoreerrors':  True,
+            'noplaylist':    True,
         }
+        if ffmpeg_dir:
+            base_opts['ffmpeg_location'] = ffmpeg_dir
 
         if fmt in ("MP3", "AAC", "OGG", "OPUS"):
             codec_map = {"MP3": "mp3", "AAC": "aac", "OGG": "vorbis", "OPUS": "opus"}
-            kbps = quality.split()[0]
+            kbps = quality.split()[0] if quality else "192"
             base_opts.update({
                 'format': 'bestaudio/best',
                 'postprocessors': [
@@ -80,7 +133,8 @@ class DownloaderMixin:
         elif fmt == "WAV":
             base_opts.update({
                 'format': 'bestaudio/best',
-                'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav'}],
+                'postprocessors': [
+                    {'key': 'FFmpegExtractAudio', 'preferredcodec': 'wav'}],
             })
         elif fmt == "FLAC":
             base_opts.update({
@@ -97,11 +151,12 @@ class DownloaderMixin:
             base_opts.update({
                 'format':              f'bestvideo[height<={res}]+bestaudio/best',
                 'merge_output_format': fmt.lower(),
-                'postprocessors': [{'key': 'EmbedThumbnail', 'already_have_thumbnail': False}],
+                'postprocessors': [
+                    {'key': 'EmbedThumbnail', 'already_have_thumbnail': False}],
             })
         elif fmt in ("WEBM", "AVI"):
             res_map = {"1080p FHD": "1080", "720p HD": "720",
-                       "480p SD": "480", "360p": "360"}
+                       "480p SD": "480",  "360p": "360"}
             res = res_map.get(quality, "720")
             base_opts.update({
                 'format':              f'bestvideo[height<={res}]+bestaudio/best',
@@ -109,39 +164,87 @@ class DownloaderMixin:
                 'postprocessors':      [],
             })
 
-        success = False
+        with yt_dlp.YoutubeDL(base_opts) as ydl:
+            ydl.download([item["url"]])
+
+    # ── Progress hooks ────────────────────────────────────────────────────────
+
+    def _ydl_hook(self, d):
+        if d["status"] == "downloading":
+            total = d.get("total_bytes") or d.get("total_bytes_estimate") or 0
+            done  = d.get("downloaded_bytes", 0)
+            speed = d.get("speed") or 0
+            pct   = (done / total * 100) if total > 0 else 0
+            for it in self.queue_items:
+                if it.get("status") == "downloading":
+                    it["progress"] = pct
+                    break
+            now = time.time()
+            if now - self._last_progress_ui < 0.12:
+                return
+            self._last_progress_ui = now
+            self.after(0, lambda p=pct, s=speed: self._update_progress_ui(p, s))
+        elif d["status"] == "finished":
+            for it in self.queue_items:
+                if it.get("status") == "downloading":
+                    it["progress"] = 100
+                    break
+            self._last_progress_ui = 0.0
+            self.after(0, lambda: self._update_progress_ui(100, 0))
+
+    def _pl_bar_show(self, done: int, total: int):
         try:
-            with yt_dlp.YoutubeDL(base_opts) as ydl:
-                ydl.download([self.current_video_url])
-
-            success = True
-            self.download_history.append({
-                "name":   self.current_video_title,
-                "time":   datetime.datetime.now().strftime("%H:%M"),
-                "format": fmt,
-            })
-            self.save_data_to_disk()
-            self.after(0, self.refresh_library_ui)
-            short_title = self.current_video_title[:60]
-            self.after(0, lambda: self.dl_progress.set(1.0))
-            self.after(0, lambda t=short_title: self.dl_status_lbl.configure(
-                text=f"{self.t('dl_done')}: {t}", text_color=self.current_theme_color))
-            notification.notify(
-                title="TuneFetch ✅",
-                message=f"{self.current_video_title[:80]}\n{fmt} • {quality}")
+            self.lbl_pl_progress.grid()
+            self.lbl_pl_progress.configure(
+                text=f"Playlist  {done} / {total}  tracks",
+                text_color=self.current_theme_color)
+            self.progress_bar_pl.grid()
+            self.progress_bar_pl.set(done / total if total else 0)
         except Exception as e:
-            err_msg = str(e)
-            self.after(0, lambda m=err_msg: self.dl_status_lbl.configure(
-                text=f"❌ {m}", text_color="#e74c3c"))
-            notification.notify(title="TuneFetch ❌", message=f"Failed: {err_msg[:80]}")
-        finally:
-            self.after(0, lambda: self.btn_download.configure(
-                state="normal", text=self.t("main_btn")))
-            if success:
-                self.after(4000, self._hide_progress)
+            print(f"[PL bar] {e}")
 
-    def _hide_progress(self):
-        self.dl_progress.grid_remove()
-        self.dl_status_lbl.configure(text="")
-        self.dl_status_lbl.grid_remove()
+    def _pl_bar_hide(self):
+        try:
+            self.progress_bar_pl.grid_remove()
+            self.lbl_pl_progress.grid_remove()
+        except Exception:
+            pass
 
+    def _update_progress_ui(self, pct, speed_bps):
+        try:
+            self.progress_bar.set(pct / 100)
+            if speed_bps > 0:
+                if speed_bps >= 1_048_576:
+                    spd = f"{speed_bps / 1_048_576:.1f} MB/s"
+                else:
+                    spd = f"{speed_bps / 1024:.0f} KB/s"
+                self.lbl_speed.configure(
+                    text=f"{pct:.0f}%  {spd}",
+                    text_color=self.current_theme_color)
+            elif pct >= 100:
+                self.lbl_speed.configure(
+                    text="Processing...",
+                    text_color=self.current_theme_color)
+        except Exception as e:
+            print(f"[UI] Progress update error: {e}")
+
+    def _refresh_queue_ui(self):
+        pass   # queue panel removed
+
+    def _clear_done_queue(self):
+        with self._queue_lock:
+            self.queue_items = [
+                it for it in self.queue_items
+                if it.get("status") not in ("done", "error")
+            ]
+
+    def _draw_ring(self, _pct=0):
+        pass
+
+    @staticmethod
+    def _fmt_speed(bps: float) -> str:
+        if bps <= 0:
+            return ""
+        if bps >= 1_048_576:
+            return f"{bps / 1_048_576:.1f} MB/s"
+        return f"{bps / 1024:.0f} KB/s"
