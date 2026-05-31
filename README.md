@@ -1,32 +1,50 @@
+<div align="center">
+
 # TuneFetch: Infinity Studio
 
-A powerful all-in-one desktop music application built with Python — search, stream, download, convert, and read lyrics, all from a beautiful modern UI.
+**Search · Download · Convert · Lyrics — all in one beautiful desktop app**
+
+[![Build](https://github.com/AliAli2155/TuneFetch/actions/workflows/build.yml/badge.svg)](https://github.com/AliAli2155/TuneFetch/actions/workflows/build.yml)
+[![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](#download)
+
+</div>
 
 ---
 
 ## Download
 
-| Platform | File | Notes |
-|----------|------|-------|
-| Windows  | [TuneFetch_Setup.exe](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch_Setup.exe) | One-click installer, no Python required |
-| macOS    | [TuneFetch.dmg](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch.dmg) | Drag & drop to Applications |
-| Linux    | [TuneFetch-x86_64.AppImage](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch-x86_64.AppImage) | Single file, runs anywhere |
-| Linux    | [tunefetch_1.0.0_amd64.deb](https://github.com/AliAli2155/TuneFetch/releases/latest/download/tunefetch_1.0.0_amd64.deb) | Debian/Ubuntu package |
+| Platform | Installer | Notes |
+|----------|-----------|-------|
+| 🪟 Windows | [TuneFetch_Setup.exe](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch_Setup.exe) | One-click installer — no Python required |
+| 🍎 macOS | [TuneFetch.dmg](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch.dmg) | Drag & drop to Applications |
+| 🐧 Linux | [TuneFetch-x86_64.AppImage](https://github.com/AliAli2155/TuneFetch/releases/latest/download/TuneFetch-x86_64.AppImage) | Single file, runs on any distro |
+| 🐧 Linux | [tunefetch_1.0.0_amd64.deb](https://github.com/AliAli2155/TuneFetch/releases/latest/download/tunefetch_1.0.0_amd64.deb) | Debian / Ubuntu package |
 
-> All installers are fully self-contained — Python, ffmpeg, and all dependencies are bundled. Nothing extra to install.
+> **Fully self-contained** — Python runtime, ffmpeg, and all libraries are bundled inside. Nothing else to install.
 
 ---
 
 ## Features
 
-- **Search & Analyze** — Search YouTube by URL or keyword, instantly fetch track info, thumbnail, and duration
-- **Built-in Player** — Play previews directly in the app with playback controls, seek bar, and volume slider
-- **Downloader** — Download audio (MP3, AAC, OGG, WAV, FLAC, OPUS) or video (MP4, MKV, WEBM, AVI) in multiple quality options
-- **Converter** — Convert any local audio/video file to a different format with quality control
-- **Lyrics** — Auto-fetches synced lyrics for the currently playing track
-- **Library** — Keeps a history of all downloaded tracks
-- **Themes** — Light/Dark mode + 6 accent color choices (Spotify Green, Sky Blue, Purple, Orange, Red, Cyan)
-- **Multi-language** — UI supports multiple languages
+| | |
+|---|---|
+| 🔍 **Search & Analyze** | Search YouTube or SoundCloud by URL or keyword — instantly loads title, thumbnail, and source badge |
+| ⬇️ **Downloader** | Download audio (MP3, AAC, OGG, WAV, FLAC, OPUS) or video (MP4, MKV, WEBM, AVI) with quality selection |
+| 📋 **Playlist Support** | Paste any YouTube playlist or SoundCloud set → queue all tracks in one click |
+| 🔄 **File Converter** | Convert local audio/video files to any format using bundled ffmpeg |
+| 📜 **Auto Lyrics** | Automatically fetches lyrics from multiple sources (syncedlyrics, lyrist, lrclib) |
+| 📚 **Library** | Full download history with format tags and timestamps |
+| 🎨 **Themes** | 6 accent colors + Dark / Light mode |
+| 🌐 **11 Languages** | English, Türkçe, Español, Français, Deutsch, Português, Italiano, Русский, Ελληνικά, 日本語, 中文 |
+| 🔗 **Drag & Drop** | Drag a URL directly onto the search bar |
+
+---
+
+## Screenshots
+
+> Coming soon
 
 ---
 
@@ -35,41 +53,9 @@ A powerful all-in-one desktop music application built with Python — search, st
 ### Requirements
 
 - Python 3.11+
-- ffmpeg (for audio conversion and yt-dlp postprocessing)
+- ffmpeg in PATH **or** placed in the project root (auto-detected)
 
-### Python Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `customtkinter` | >=5.2.0 | Modern UI framework |
-| `yt-dlp` | >=2024.1.1 | YouTube downloading & info extraction |
-| `Pillow` | >=10.0.0 | Thumbnail image processing |
-| `plyer` | >=2.1.0 | Desktop notifications |
-| `pygame` | >=2.5.0 | Audio playback |
-| `requests` | >=2.31.0 | HTTP requests (thumbnails, lyrics) |
-| `syncedlyrics` | >=0.4.0 | Synced lyrics fetching |
-| `pyinstaller` | >=6.0.0 | Packaging (build only) |
-
-### ffmpeg Setup
-
-**Windows** — download static build and add to PATH, or place `ffmpeg.exe` in the project folder:
-- [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/)
-
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Linux:**
-```bash
-sudo apt install ffmpeg
-```
-
-### Run
+### Install & Run
 
 ```bash
 git clone https://github.com/AliAli2155/TuneFetch.git
@@ -78,66 +64,68 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### Python Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `customtkinter` | Modern UI framework |
+| `yt-dlp` | YouTube / SoundCloud downloading & info extraction |
+| `Pillow` | Thumbnail image processing |
+| `plyer` | Desktop notifications |
+| `requests` | HTTP (thumbnails, lyrics APIs) |
+| `syncedlyrics` | Synced lyrics fetching |
+| `pyinstaller` | Packaging (build only) |
+
+### ffmpeg
+
+**Windows** — place `ffmpeg.exe` in the project folder, or download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/)
+
+**macOS** — `brew install ffmpeg`
+
+**Linux** — `sudo apt install ffmpeg`
+
 ---
 
 ## Project Structure
 
 ```
 TuneFetch/
-├── main.py                        Entry point + frozen-bundle ffmpeg injection
+├── main.py                    Boot + __init__ (~90 lines)
 ├── core/
-│   ├── constants.py               Colors, format/quality maps, theme colors
-│   ├── translations.py            Multi-language strings
-│   ├── ui_setup.py                UI layout and widgets
-│   ├── player.py                  Audio playback logic
-│   ├── downloader.py              yt-dlp download logic
-│   ├── lyrics.py                  Lyrics auto-fetch (syncedlyrics + fallback APIs)
-│   └── converter.py               ffmpeg-based file conversion
-├── assets/
-│   ├── icon.ico                   Windows icon
-│   ├── icon.icns                  macOS icon
-│   └── icon.png                   Linux icon
-├── ffmpeg_bins/
-│   ├── windows/ffmpeg.exe         Bundled static ffmpeg (Windows)
-│   ├── macos/ffmpeg               Bundled static ffmpeg (macOS)
-│   └── linux/ffmpeg               Bundled static ffmpeg (Linux)
-├── build_scripts/
-│   ├── build_windows.bat          Full Windows build script
-│   ├── build_macos.sh             Full macOS build script
-│   ├── build_linux.sh             Full Linux build script
-│   ├── download_ffmpeg.py         Downloads static ffmpeg for each platform
-│   └── setup_assets.py            Generates icon files
-├── installer/
-│   ├── windows/tunefetch_setup.iss  Inno Setup 6 installer script
-│   ├── macos/create_dmg.sh          DMG creator
-│   └── linux/create_appimage.sh     AppImage + .deb builder
-├── .github/workflows/build.yml    GitHub Actions CI (Windows + macOS + Linux)
-├── tunefetch.spec                 PyInstaller spec
-└── requirements.txt               Python dependencies
+│   ├── analyzer.py            Video analysis, playlist, thumbnail, drag-drop
+│   ├── downloader.py          Download queue, progress hooks, yt-dlp opts
+│   ├── settings.py            Settings popup, theme, language, data I/O, library UI
+│   ├── ui_setup.py            Widget creation and layout
+│   ├── converter.py           Local file conversion (ffmpeg)
+│   ├── lyrics.py              Auto lyrics (syncedlyrics + 3 fallback APIs)
+│   ├── constants.py           Colors, format maps, theme palette
+│   └── translations.py        11-language string table
+├── assets/                    App icons (ico / icns / png)
+├── ffmpeg_bins/               Static ffmpeg binaries (downloaded at build time)
+├── build_scripts/             Platform build scripts + ffmpeg downloader
+├── installer/                 Inno Setup / DMG / AppImage scripts
+├── .github/workflows/         CI: builds all 3 platforms on every push
+├── tunefetch.spec             PyInstaller spec
+└── requirements.txt
 ```
 
 ---
 
 ## Building
 
-See [README_BUILD.md](README_BUILD.md) for full build instructions.
+All three platforms build automatically via **GitHub Actions** on every push.  
+For local builds see [README_BUILD.md](README_BUILD.md).
 
-**Quick start (Windows):**
 ```bat
+# Windows
 build_scripts\build_windows.bat
-```
 
-**Quick start (macOS):**
-```bash
+# macOS
 chmod +x build_scripts/build_macos.sh && ./build_scripts/build_macos.sh
-```
 
-**Quick start (Linux):**
-```bash
+# Linux
 chmod +x build_scripts/build_linux.sh && ./build_scripts/build_linux.sh
 ```
-
-CI builds run automatically on every push via GitHub Actions.
 
 ---
 
@@ -145,6 +133,4 @@ CI builds run automatically on every push via GitHub Actions.
 
 ---
 
-## License
-
-This project is private. All rights reserved.
+*All rights reserved.*
