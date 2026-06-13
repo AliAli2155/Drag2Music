@@ -43,7 +43,6 @@
 
 - 🎛️ **Redesigned UI** — sidebar navigation, a large album-art cover card, accent gradients and smooth animations.
 - 🖼️ **Title & artist on the cover** — baked into the artwork behind a gradient scrim, with perfectly symmetric cover / lyrics cards.
-- 🎨 **Theme-aware app icon** — the window icon switches automatically: white mark in Dark mode, black mark in Light mode.
 - 🎬 **Reliable MP4 downloads** — cover-art embedding fixed (mutagen) and smarter format selection.
 - 📚 **Richer library** — every download records format, quality, file size, duration, source and timestamp; renders instantly even with hundreds of entries.
 - ⚡ **Much faster startup** (~1s) and zero jank when resizing or maximizing.
@@ -61,7 +60,7 @@
 | 🔄 **File converter** | Convert local audio/video files to any format using the bundled ffmpeg |
 | 📜 **Auto lyrics** | Fetches lyrics automatically from multiple sources (syncedlyrics, lyrist, lyrics.ovh, lrclib) |
 | 🎚️ **DJ-grade audio** | Optional EBU R128 loudness normalization (−14 / −9 LUFS) with a fixed 44.1 kHz sample rate |
-| 🎨 **Themes** | 6 accent colors with animated transitions + Dark / Light mode (theme-aware app icon) |
+| 🎨 **Themes** | 6 accent colors with animated transitions + Dark / Light mode |
 | 🌐 **11 languages** | English, Türkçe, Español, Français, Deutsch, Português, Italiano, Русский, Ελληνικά, 日本語, 中文 — switch live, no restart |
 | 🔗 **Drag & drop** | Drop a URL straight onto the search bar |
 
@@ -111,7 +110,7 @@ python main.py
 
 ```
 Drag2Music/
-├── main.py                    Boot, ffmpeg path injection, app __init__, themed icon
+├── main.py                    Boot, ffmpeg path injection, app __init__, window icon
 ├── core/
 │   ├── ui_setup.py            Layout, sidebar, gradient widgets, canvas library list
 │   ├── analyzer.py            Video analysis, playlists, cover + caption rendering, drag-drop
@@ -122,7 +121,7 @@ Drag2Music/
 │   ├── audio_quality.py       Source-quality badge, loudness normalization
 │   ├── constants.py           Colors, format maps, theme palette, APP_VERSION
 │   └── translations.py        11-language string table
-├── assets/                    icon-white / icon-black (png/ico/icns) + static defaults
+├── assets/                    app icon (icon.png → icon.ico / icon.icns)
 ├── ffmpeg_bins/               Static ffmpeg binaries (downloaded at build time)
 ├── build_scripts/             Platform build scripts + ffmpeg downloader + setup_assets
 ├── installer/                 Inno Setup / DMG / AppImage scripts

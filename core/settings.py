@@ -198,11 +198,6 @@ class SettingsMixin:
                 return
             ctk.set_appearance_mode(m)
             self.save_data_to_disk()
-            # Swap the window icon to contrast with the new theme
-            try:
-                self._apply_window_icon()
-            except Exception:
-                pass
             # PIL-rendered elements use the mode's background colour —
             # refresh them all for the new mode.
             self._sync_thumb_bg()

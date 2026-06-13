@@ -166,28 +166,16 @@ def main() -> None:
         print("ERROR: Pillow is required (pip install Pillow).")
         sys.exit(1)
 
-    white = os.path.join(ASSETS_DIR, "icon-white.png")
-    black = os.path.join(ASSETS_DIR, "icon-black.png")
+    src = os.path.join(ASSETS_DIR, "icon.png")
+    if not os.path.exists(src):
+        print("No assets/icon.png found — generating the procedural icon.")
+        _make_icon_image(512).save(src)
 
-    # No themed variants supplied → fall back to the procedural design.
-    if not (os.path.exists(white) or os.path.exists(black)):
-        print("No icon-white/black.png found — generating procedural icon.")
-        proc = os.path.join(ASSETS_DIR, "icon-white.png")
-        _make_icon_image(512).save(proc)
-        white = black = proc
-
-    print("Generating themed icons (Dark uses white, Light uses black) ...")
-    for variant, src in (("white", white), ("black", black)):
-        if os.path.exists(src):
-            _ico_from(src, os.path.join(ASSETS_DIR, f"icon-{variant}.ico"))
-            _icns_from(src, os.path.join(ASSETS_DIR, f"icon-{variant}.icns"))
-
-    # Static fallback used by the .exe / installer / .app bundle (can't switch
-    # at runtime) — default to the white (dark-theme) mark.
-    default = white if os.path.exists(white) else black
-    _ico_from(default,  os.path.join(PROJECT_ROOT, "Drag2Music.ico"))
-    _ico_from(default,  os.path.join(ASSETS_DIR, "icon.ico"))
-    _icns_from(default, os.path.join(ASSETS_DIR, "icon.icns"))
+    # One icon for every platform / theme — derived from assets/icon.png.
+    print("Generating icons from assets/icon.png ...")
+    _ico_from(src,  os.path.join(PROJECT_ROOT, "Drag2Music.ico"))
+    _ico_from(src,  os.path.join(ASSETS_DIR, "icon.ico"))
+    _icns_from(src, os.path.join(ASSETS_DIR, "icon.icns"))
     print("Icon setup complete.")
 
 
