@@ -68,7 +68,6 @@ C = {
     "mid":          ("#495057", "#bbbbbb"),   # medium text
     "bright":       ("#212529", "#dddddd"),   # prominent text
     "very_dim":     ("#ced4da", "#2e2e2e"),   # very muted / placeholder
-    "studio":       ("#adb5bd", "#444444"),   # "Studio" logo text
     "path_txt":     ("#6c757d", "#666666"),   # folder path text
     "tune":         ("#212529", "#ffffff"),   # "Drag2" logo (white in dark)
     "nav_hover":    ("#e9ecef", "#1e1e1e"),   # sidebar nav hover

@@ -1,4 +1,4 @@
-# Drag2Music: Infinity Studio — Build Guide
+# Drag2Music — Build Guide
 
 This document explains how to build native installers for Windows, macOS, and Linux from source.
 
@@ -73,7 +73,7 @@ The script:
 
 ---
 
-### Linux — produces `Drag2Music-x86_64.AppImage` **and** `drag2music_1.0.0_amd64.deb`
+### Linux — produces `Drag2Music-x86_64.AppImage` **and** `drag2music_3.1.0_amd64.deb`
 
 ```bash
 chmod +x build_scripts/build_linux.sh

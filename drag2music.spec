@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec for Drag2Music: Infinity Studio
+PyInstaller spec for Drag2Music
 Build:  pyinstaller drag2music.spec --clean --noconfirm
 """
 import os
@@ -185,7 +185,7 @@ if sys.platform == "darwin":
         icon=_icon_mac,
         bundle_identifier="com.ali.drag2music",
         info_plist={
-            "CFBundleDisplayName":        "Drag2Music: Infinity Studio",
+            "CFBundleDisplayName":        "Drag2Music",
             "CFBundleShortVersionString":  "3.1.0",
             "CFBundleVersion":            "3.1.0",
             "NSHighResolutionCapable":    True,

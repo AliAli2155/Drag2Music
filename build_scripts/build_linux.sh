@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drag2Music: Infinity Studio — Linux Build Script
+# Drag2Music — Linux Build Script
 # Usage: chmod +x build_scripts/build_linux.sh && ./build_scripts/build_linux.sh
 set -euo pipefail
 
@@ -8,7 +8,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 echo "============================================================"
-echo " Drag2Music: Infinity Studio — Linux Build"
+echo " Drag2Music — Linux Build"
 echo "============================================================"
 echo "[INFO] Project root: $PROJECT_ROOT"
 echo

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drag2Music: Infinity Studio — Linux AppImage + .deb builder
+# Drag2Music — Linux AppImage + .deb builder
 # Called by build_scripts/build_linux.sh after PyInstaller completes.
 # Requirements:
 #   - fuse / libfuse2  (sudo apt install fuse libfuse2)
@@ -68,7 +68,7 @@ chmod +x "$APPDIR/AppRun"
 # .desktop file (required by AppImage spec)
 cat > "$APPDIR/drag2music.desktop" <<DESKTOP
 [Desktop Entry]
-Name=Drag2Music: Infinity Studio
+Name=Drag2Music
 Comment=Download, convert and play music from YouTube
 Exec=Drag2Music
 Icon=icon
@@ -130,7 +130,7 @@ chmod +x "${DEB_BIN}/drag2music"
 # .desktop file
 cat > "${DEB_SHARE}/drag2music.desktop" <<DESKTOP
 [Desktop Entry]
-Name=Drag2Music: Infinity Studio
+Name=Drag2Music
 GenericName=Music Downloader
 Comment=Download, convert and play music from YouTube
 Exec=/usr/lib/drag2music/Drag2Music
@@ -159,7 +159,7 @@ Depends: libc6 (>= 2.17), libfuse2 | libfuse3, python3-tk
 Homepage: https://github.com/AliAli2155/Drag2Music
 Section: sound
 Priority: optional
-Description: Drag2Music: Infinity Studio
+Description: Drag2Music
  Download, convert and play music from YouTube.
  Supports MP3, AAC, OGG, OPUS, WAV, FLAC, MP4, MKV video formats.
  Includes built-in music player, lyrics viewer, and format converter.

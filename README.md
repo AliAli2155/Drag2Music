@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 Drag2Music: Infinity Studio
+# 🎵 Drag2Music
 
 **Search · Download · Convert · Lyrics — a complete music downloader for your desktop**
 
@@ -41,7 +41,7 @@
 
 ## What's new in 3.1
 
-- 🎛️ **Redesigned studio UI** — sidebar navigation, a large album-art cover card, accent gradients and smooth animations.
+- 🎛️ **Redesigned UI** — sidebar navigation, a large album-art cover card, accent gradients and smooth animations.
 - 🖼️ **Title & artist on the cover** — baked into the artwork behind a gradient scrim, with perfectly symmetric cover / lyrics cards.
 - 🎨 **Theme-aware app icon** — the window icon switches automatically: white mark in Dark mode, black mark in Light mode.
 - 🎬 **Reliable MP4 downloads** — cover-art embedding fixed (mutagen) and smarter format selection.

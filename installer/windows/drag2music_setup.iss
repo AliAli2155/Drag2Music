@@ -1,11 +1,11 @@
-; Drag2Music: Infinity Studio — Inno Setup Script
+; Drag2Music — Inno Setup Script
 ; Compiler: Inno Setup 6.x
 ; Output  : dist\Drag2Music_Setup.exe
 ;
 ; Build command (run from project root):
 ;   iscc installer\windows\drag2music_setup.iss
 
-#define AppName       "Drag2Music: Infinity Studio"
+#define AppName       "Drag2Music"
 #define AppShortName  "Drag2Music"
 #define AppVersion    "3.1.0"
 #define AppPublisher  "Ali A."

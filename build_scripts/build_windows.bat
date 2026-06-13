@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 echo ============================================================
-echo  Drag2Music: Infinity Studio — Windows Build Script
+echo  Drag2Music — Windows Build Script
 echo ============================================================
 echo.
 

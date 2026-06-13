@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drag2Music: Infinity Studio — macOS Build Script
+# Drag2Music — macOS Build Script
 # Usage: chmod +x build_scripts/build_macos.sh && ./build_scripts/build_macos.sh
 set -euo pipefail
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 echo "============================================================"
-echo " Drag2Music: Infinity Studio — macOS Build"
+echo " Drag2Music — macOS Build"
 echo "============================================================"
 echo "[INFO] Project root: $PROJECT_ROOT"
 echo
