@@ -1,4 +1,4 @@
-name: Build TuneFetch Installers
+name: Build Drag2Music Installers
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
 
   # ─────────────────────────────────────────────
-  #  WINDOWS  →  TuneFetch_Setup.exe
+  #  WINDOWS  →  Drag2Music_Setup.exe
   # ─────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
@@ -30,7 +30,7 @@ jobs:
         run: python build_scripts/download_ffmpeg.py --platform windows
 
       - name: PyInstaller
-        run: python -m PyInstaller tunefetch.spec --clean --noconfirm
+        run: python -m PyInstaller drag2music.spec --clean --noconfirm
 
       - name: Inno Setup
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
@@ -41,11 +41,11 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: TuneFetch-Windows
-          path: dist/TuneFetch_Setup.exe
+          name: Drag2Music-Windows
+          path: dist/Drag2Music_Setup.exe
 
   # ─────────────────────────────────────────────
-  #  macOS  →  TuneFetch.dmg
+  #  macOS  →  Drag2Music.dmg
   # ─────────────────────────────────────────────
   build-macos:
     runs-on: macos-latest
@@ -66,7 +66,7 @@ jobs:
         run: python3 build_scripts/download_ffmpeg.py --platform macos
 
       - name: PyInstaller
-        run: python3 -m PyInstaller tunefetch.spec --clean --noconfirm
+        run: python3 -m PyInstaller drag2music.spec --clean --noconfirm
 
       - name: Create DMG
         run: |
@@ -76,8 +76,8 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: TuneFetch-macOS
-          path: dist/TuneFetch.dmg
+          name: Drag2Music-macOS
+          path: dist/Drag2Music.dmg
 
   # ─────────────────────────────────────────────
   #  LINUX  →  AppImage + .deb
@@ -109,7 +109,7 @@ jobs:
         run: python3 build_scripts/download_ffmpeg.py --platform linux
 
       - name: PyInstaller
-        run: python3 -m PyInstaller tunefetch.spec --clean --noconfirm
+        run: python3 -m PyInstaller drag2music.spec --clean --noconfirm
 
       - name: Create AppImage + deb
         run: |
@@ -119,14 +119,14 @@ jobs:
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: TuneFetch-Linux-AppImage
-          path: TuneFetch-x86_64.AppImage
+          name: Drag2Music-Linux-AppImage
+          path: Drag2Music-x86_64.AppImage
 
       - name: Upload deb
         uses: actions/upload-artifact@v4
         with:
-          name: TuneFetch-Linux-deb
-          path: tunefetch_1.0.0_amd64.deb
+          name: Drag2Music-Linux-deb
+          path: drag2music_1.0.0_amd64.deb
 
   # ─────────────────────────────────────────────
   #  Release  (sadece tag push'unda çalışır)
@@ -147,8 +147,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/TuneFetch-Windows/TuneFetch_Setup.exe
-            artifacts/TuneFetch-macOS/TuneFetch.dmg
-            artifacts/TuneFetch-Linux-AppImage/TuneFetch-x86_64.AppImage
-            artifacts/TuneFetch-Linux-deb/tunefetch_1.0.0_amd64.deb
+            artifacts/Drag2Music-Windows/Drag2Music_Setup.exe
+            artifacts/Drag2Music-macOS/Drag2Music.dmg
+            artifacts/Drag2Music-Linux-AppImage/Drag2Music-x86_64.AppImage
+            artifacts/Drag2Music-Linux-deb/drag2music_1.0.0_amd64.deb
           generate_release_notes: true

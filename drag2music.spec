@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec for TuneFetch: Infinity Studio
-Build:  pyinstaller tunefetch.spec --clean --noconfirm
+PyInstaller spec for Drag2Music: Infinity Studio
+Build:  pyinstaller drag2music.spec --clean --noconfirm
 """
 import os
 import sys
@@ -25,6 +25,16 @@ datas = [
 
 if _ctk_assets and os.path.isdir(_ctk_assets):
     datas.append((_ctk_assets, os.path.join("customtkinter", "assets")))
+
+# ── tkinterdnd2 (drag & drop) native libraries ───────────────────────────────
+_dnd_hidden = []
+try:
+    from PyInstaller.utils.hooks import collect_data_files as _cdf
+    import tkinterdnd2 as _dnd
+    datas += _cdf("tkinterdnd2")
+    _dnd_hidden = ["tkinterdnd2"]
+except Exception:
+    pass
 
 # Also bundle any top-level JSON theme files customtkinter might look for
 try:
@@ -58,6 +68,13 @@ a = Analysis(
         "yt_dlp.postprocessor",
         "yt_dlp.postprocessor.ffmpeg",
         "yt_dlp.postprocessor.embedthumbnail",
+        # mutagen: imported lazily by yt-dlp for MP4/M4A/FLAC cover embedding
+        "mutagen",
+        "mutagen.mp4",
+        "mutagen.flac",
+        "mutagen.oggvorbis",
+        "mutagen.oggopus",
+        "mutagen.id3",
         # PIL / Pillow
         "PIL",
         "PIL._tkinter_finder",
@@ -80,14 +97,16 @@ a = Analysis(
         "core.translations",
         "core.constants",
         "core.ui_setup",
-        "core.player",
+        "core.analyzer",
+        "core.audio_quality",
+        "core.settings",
         "core.downloader",
         "core.lyrics",
         "core.converter",
         # stdlib extras sometimes missed
         "pkg_resources",
         "pkg_resources.py2_warn",
-    ],
+    ] + _dnd_hidden,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -129,7 +148,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="TuneFetch",
+    name="Drag2Music",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -153,7 +172,7 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="TuneFetch",
+    name="Drag2Music",
 )
 
 # ── macOS .app BUNDLE ─────────────────────────────────────────────────────────
@@ -162,11 +181,11 @@ coll = COLLECT(
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,
-        name="TuneFetch.app",
+        name="Drag2Music.app",
         icon=_icon_mac,
-        bundle_identifier="com.tunefetch.infinitystudio",
+        bundle_identifier="com.ali.drag2music",
         info_plist={
-            "CFBundleDisplayName":        "TuneFetch: Infinity Studio",
+            "CFBundleDisplayName":        "Drag2Music: Infinity Studio",
             "CFBundleShortVersionString":  "1.0.0",
             "CFBundleVersion":            "1.0.0",
             "NSHighResolutionCapable":    True,

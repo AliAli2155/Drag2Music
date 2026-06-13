@@ -1,6 +1,9 @@
 import os, subprocess, threading
 from tkinter import filedialog
 
+# Prevents a console window flashing up on Windows (frozen / windowed builds)
+_NO_WINDOW = 0x08000000 if os.name == "nt" else 0  # CREATE_NO_WINDOW
+
 
 class ConverterMixin:
 
@@ -44,7 +47,7 @@ class ConverterMixin:
             elif target_fmt == "aac":
                 cmd += ["-codec:a", "aac", "-b:a", f"{quality_kbps}k"]
             elif target_fmt == "ogg":
-                cmd += ["-codec:a", "libvorbis"]
+                cmd += ["-codec:a", "libvorbis", "-b:a", f"{quality_kbps}k"]
             elif target_fmt == "flac":
                 cmd += ["-codec:a", "flac"]
             elif target_fmt == "wav":
@@ -54,8 +57,25 @@ class ConverterMixin:
             cmd.append(out)
 
             os.makedirs(self.download_path, exist_ok=True)
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            if result.returncode != 0:
+            result = subprocess.run(cmd, capture_output=True, text=True,
+                                    creationflags=_NO_WINDOW, timeout=1800)
+
+            if (result.returncode != 0 and target_fmt in ("mp4", "mkv")):
+                # Stream-copy can fail (e.g. incompatible codec in container):
+                # retry once with a full re-encode.
+                cmd_re = [ffmpeg, "-y", "-i", src,
+                          "-codec:v", "libx264", "-preset", "fast",
+                          "-codec:a", "aac", out]
+                result = subprocess.run(cmd_re, capture_output=True, text=True,
+                                        creationflags=_NO_WINDOW, timeout=3600)
+
+            if result.returncode != 0 or not os.path.exists(out) \
+                    or os.path.getsize(out) == 0:
+                try:
+                    if os.path.exists(out):
+                        os.remove(out)   # never leave a broken output behind
+                except OSError:
+                    pass
                 raise RuntimeError(result.stderr[-200:] if result.stderr else "ffmpeg error")
 
             out_name = os.path.basename(out)

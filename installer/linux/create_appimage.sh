@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TuneFetch: Infinity Studio — Linux AppImage + .deb builder
+# Drag2Music: Infinity Studio — Linux AppImage + .deb builder
 # Called by build_scripts/build_linux.sh after PyInstaller completes.
 # Requirements:
 #   - fuse / libfuse2  (sudo apt install fuse libfuse2)
@@ -10,12 +10,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$PROJECT_ROOT"
 
-APP_NAME="TuneFetch"
+APP_NAME="Drag2Music"
 APP_VERSION="1.0.0"
 ARCH="x86_64"
 DIST_DIR="dist/${APP_NAME}"
 APPIMAGE_OUT="${APP_NAME}-${ARCH}.AppImage"
-DEB_NAME="tunefetch_${APP_VERSION}_amd64"
+DEB_NAME="drag2music_${APP_VERSION}_amd64"
 
 # ============================================================
 #  PART A — AppImage
@@ -59,18 +59,18 @@ cp -r "$DIST_DIR/." "$APPDIR/usr/bin/${APP_NAME}/"
 cat > "$APPDIR/AppRun" <<'APPRUN'
 #!/usr/bin/env bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-export LD_LIBRARY_PATH="${HERE}/usr/bin/TuneFetch:${LD_LIBRARY_PATH:-}"
-export PATH="${HERE}/usr/bin/TuneFetch:${PATH}"
-exec "${HERE}/usr/bin/TuneFetch/TuneFetch" "$@"
+export LD_LIBRARY_PATH="${HERE}/usr/bin/Drag2Music:${LD_LIBRARY_PATH:-}"
+export PATH="${HERE}/usr/bin/Drag2Music:${PATH}"
+exec "${HERE}/usr/bin/Drag2Music/Drag2Music" "$@"
 APPRUN
 chmod +x "$APPDIR/AppRun"
 
 # .desktop file (required by AppImage spec)
-cat > "$APPDIR/tunefetch.desktop" <<DESKTOP
+cat > "$APPDIR/drag2music.desktop" <<DESKTOP
 [Desktop Entry]
-Name=TuneFetch: Infinity Studio
+Name=Drag2Music: Infinity Studio
 Comment=Download, convert and play music from YouTube
-Exec=TuneFetch
+Exec=Drag2Music
 Icon=icon
 Terminal=false
 Type=Application
@@ -111,7 +111,7 @@ rm -rf "$DEB_ROOT"
 
 # Standard deb directory layout
 DEB_CONTROL="${DEB_ROOT}/DEBIAN"
-DEB_LIB="${DEB_ROOT}/usr/lib/tunefetch"
+DEB_LIB="${DEB_ROOT}/usr/lib/drag2music"
 DEB_SHARE="${DEB_ROOT}/usr/share/applications"
 DEB_PIXMAPS="${DEB_ROOT}/usr/share/pixmaps"
 DEB_BIN="${DEB_ROOT}/usr/bin"
@@ -121,20 +121,20 @@ mkdir -p "$DEB_CONTROL" "$DEB_LIB" "$DEB_SHARE" "$DEB_PIXMAPS" "$DEB_BIN"
 cp -r "$DIST_DIR/." "$DEB_LIB/"
 
 # Launcher wrapper in /usr/bin so it's on PATH
-cat > "${DEB_BIN}/tunefetch" <<'LAUNCHER'
+cat > "${DEB_BIN}/drag2music" <<'LAUNCHER'
 #!/usr/bin/env bash
-exec /usr/lib/tunefetch/TuneFetch "$@"
+exec /usr/lib/drag2music/Drag2Music "$@"
 LAUNCHER
-chmod +x "${DEB_BIN}/tunefetch"
+chmod +x "${DEB_BIN}/drag2music"
 
 # .desktop file
-cat > "${DEB_SHARE}/tunefetch.desktop" <<DESKTOP
+cat > "${DEB_SHARE}/drag2music.desktop" <<DESKTOP
 [Desktop Entry]
-Name=TuneFetch: Infinity Studio
+Name=Drag2Music: Infinity Studio
 GenericName=Music Downloader
 Comment=Download, convert and play music from YouTube
-Exec=/usr/lib/tunefetch/TuneFetch
-Icon=tunefetch
+Exec=/usr/lib/drag2music/Drag2Music
+Icon=drag2music
 Terminal=false
 Type=Application
 Categories=Audio;Music;Network;
@@ -144,22 +144,22 @@ DESKTOP
 
 # App icon
 if [ -f "assets/icon.png" ]; then
-    cp "assets/icon.png" "${DEB_PIXMAPS}/tunefetch.png"
+    cp "assets/icon.png" "${DEB_PIXMAPS}/drag2music.png"
 fi
 
 # DEBIAN/control
 INSTALLED_SIZE="$(du -sk "$DEB_LIB" | cut -f1)"
 cat > "${DEB_CONTROL}/control" <<CONTROL
-Package: tunefetch
+Package: drag2music
 Version: ${APP_VERSION}
 Architecture: amd64
-Maintainer: TuneFetch <23022006ali@gmail.com>
+Maintainer: Drag2Music <23022006ali@gmail.com>
 Installed-Size: ${INSTALLED_SIZE}
 Depends: libc6 (>= 2.17), libfuse2 | libfuse3, python3-tk
-Homepage: https://github.com/AliAli2155/TuneFetch
+Homepage: https://github.com/AliAli2155/Drag2Music
 Section: sound
 Priority: optional
-Description: TuneFetch: Infinity Studio
+Description: Drag2Music: Infinity Studio
  Download, convert and play music from YouTube.
  Supports MP3, AAC, OGG, OPUS, WAV, FLAC, MP4, MKV video formats.
  Includes built-in music player, lyrics viewer, and format converter.
@@ -187,8 +187,8 @@ chmod 0755 "${DEB_CONTROL}/postrm"
 # Fix permissions (dpkg requires 0755 on DEBIAN scripts, 0644 on data files)
 find "$DEB_ROOT" -type f -not -path "*/DEBIAN/*" -exec chmod 644 {} \;
 find "$DEB_ROOT" -type d -exec chmod 755 {} \;
-chmod 0755 "${DEB_BIN}/tunefetch"
-chmod 0755 "${DEB_LIB}/TuneFetch"
+chmod 0755 "${DEB_BIN}/drag2music"
+chmod 0755 "${DEB_LIB}/Drag2Music"
 
 echo "[deb] Running dpkg-deb..."
 dpkg-deb --build --root-owner-group "$DEB_ROOT"
