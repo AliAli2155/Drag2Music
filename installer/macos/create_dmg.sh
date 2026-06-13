@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drag2Music: Infinity Studio — macOS .dmg creator
+# Drag2Music — macOS .dmg creator
 # Called by build_scripts/build_macos.sh after PyInstaller completes.
 # Requires: hdiutil (bundled with macOS), optional: AppleScript for custom layout
 set -euo pipefail
@@ -13,7 +13,7 @@ APP_BUNDLE="dist/${APP_NAME}.app"
 DMG_NAME="${APP_NAME}"
 DMG_OUT="dist/${DMG_NAME}.dmg"
 TMP_DIR="$(mktemp -d)"
-VOLUME_NAME="Drag2Music Infinity Studio"
+VOLUME_NAME="Drag2Music"
 
 echo "[DMG] Checking for built .app..."
 if [ ! -d "$APP_BUNDLE" ]; then
