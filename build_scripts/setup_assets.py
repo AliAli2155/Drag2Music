@@ -20,9 +20,10 @@ ASSETS_DIR   = os.path.join(PROJECT_ROOT, "assets")
 os.makedirs(ASSETS_DIR, exist_ok=True)
 
 # Brand palette
-GRAD_TOP = (34, 224, 101)   # bright green (top)
-GRAD_BOT = (12, 140, 58)    # deep green   (bottom)
-NOTE_CLR = (255, 255, 255)  # white music note
+GRAD_TOP  = (34, 224, 101)   # bright green (top)
+GRAD_BOT  = (12, 140, 58)    # deep green   (bottom)
+NOTE_CLR  = (255, 255, 255)  # white line-art
+DOT_CLR   = (74, 93, 107)    # blue-grey note-head centre (from the reference)
 
 
 def _qbez(p0, p1, p2, n=28):
@@ -80,40 +81,39 @@ def _make_icon_image(size: int):
         cap(pts[0], w)
         cap(pts[-1], w)
 
-    # ── Open ring (gap at the bottom-right for the arrow) ─────────────────────
-    ccx, ccy, rc = 0.465, 0.450, 0.350
-    wc  = int(0.060 * S)
+    # ── Open ring (nearly full circle, opening at the bottom) ─────────────────
+    ccx, ccy, rc = 0.490, 0.460, 0.410
+    wc  = int(0.058 * S)
     box = [P(ccx - rc, ccy - rc)[0], P(ccx - rc, ccy - rc)[1],
            P(ccx + rc, ccy + rc)[0], P(ccx + rc, ccy + rc)[1]]
-    a0, a1 = 132, 378                    # clockwise sweep; gap ~18°..132°
+    a0, a1 = 92, 372                     # bottom (6 o'clock) → right (~4 o'clock)
     draw.arc(box, a0, a1, fill=white, width=wc)
     for ang in (a0, a1):
         a = math.radians(ang)
         cap((ccx * S + rc * S * math.cos(a),
              ccy * S + rc * S * math.sin(a)), wc)
 
-    # ── Eighth note (inside, centre-left) ─────────────────────────────────────
+    # ── Eighth note (inside, centre) ──────────────────────────────────────────
     wn = int(0.046 * S)
-    hx, hy, rh = 0.395, 0.605, 0.082
-    stem_x = hx + rh * 0.82
-    stroke([P(stem_x, 0.305), P(stem_x, hy)], wn)               # stem
-    stroke(_qbez(P(stem_x, 0.305), P(0.605, 0.315),
-                 P(0.555, 0.455)), wn)                          # flag hook
+    hx, hy, rh = 0.405, 0.595, 0.090
+    stem_x = hx + rh * 0.80
+    stroke([P(stem_x, 0.290), P(stem_x, hy)], wn)              # stem
+    stroke(_qbez(P(stem_x, 0.290), P(0.610, 0.300),
+                 P(0.560, 0.450)), wn)                         # flag hook
     draw.ellipse([P(hx - rh, hy - rh)[0], P(hx - rh, hy - rh)[1],
                   P(hx + rh, hy + rh)[0], P(hx + rh, hy + rh)[1]],
-                 fill=white)                                    # note head
-    # subtle accent dot in the head (echoes the reference)
-    rd = rh * 0.40
+                 fill=white)                                   # white head ring
+    rd = rh * 0.60                                             # blue-grey centre
     draw.ellipse([P(hx - rd, hy - rd)[0], P(hx - rd, hy - rd)[1],
                   P(hx + rd, hy + rd)[0], P(hx + rd, hy + rd)[1]],
-                 fill=(GRAD_BOT[0], GRAD_BOT[1], GRAD_BOT[2], 255))
+                 fill=(*DOT_CLR, 255))
 
     # ── Download arrow (in the bottom-right gap) ──────────────────────────────
     wa = int(0.052 * S)
-    ax = 0.725
-    stroke([P(ax, 0.545), P(ax, 0.815)], wa)                   # shaft
-    stroke([P(ax - 0.090, 0.715), P(ax, 0.825),
-            P(ax + 0.090, 0.715)], wa)                         # head chevron
+    ax = 0.745
+    stroke([P(ax, 0.545), P(ax, 0.820)], wa)                  # shaft
+    stroke([P(ax - 0.092, 0.718), P(ax, 0.830),
+            P(ax + 0.092, 0.718)], wa)                         # head chevron
 
     return img.resize((size, size), Image.LANCZOS)
 
