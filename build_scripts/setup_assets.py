@@ -118,68 +118,45 @@ def _make_icon_image(size: int):
     return img.resize((size, size), Image.LANCZOS)
 
 
-def _master(size):
-    """The single source-of-truth icon at `size` px (RGBA).
-
-    Prefers a hand-supplied assets/icon.png so a custom logo is honoured and
-    never overwritten; falls back to the procedural design when it is absent."""
+def _load(src, size):
     from PIL import Image
-    png = os.path.join(ASSETS_DIR, "icon.png")
-    if os.path.exists(png):
-        return Image.open(png).convert("RGBA").resize((size, size), Image.LANCZOS)
-    return _make_icon_image(size)
+    return Image.open(src).convert("RGBA").resize((size, size), Image.LANCZOS)
 
 
-def generate_png(dst=None, size=512):
-    dst = dst or os.path.join(ASSETS_DIR, "icon.png")
-    if os.path.exists(dst):
-        print(f"  Keeping existing {os.path.relpath(dst, PROJECT_ROOT)}")
-        return dst
-    _make_icon_image(size).save(dst, format="PNG")
-    print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} ({size}px)")
-    return dst
+def _ico_from(src_png, dst):
+    sizes = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)]
+    _load(src_png, 256).save(dst, format="ICO", sizes=sizes)
+    print(f"  {os.path.relpath(dst, PROJECT_ROOT)}  <- {os.path.basename(src_png)}")
 
 
-def generate_ico(dst):
-    sizes  = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)]
-    _master(256).save(dst, format="ICO", sizes=sizes)
-    print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} (multi-size)")
-
-
-def generate_icns(dst):
+def _icns_from(src_png, dst):
+    from PIL import Image
+    base = _load(src_png, 512)
     if sys.platform == "darwin":
         # Highest fidelity: build a proper .iconset via iconutil
         import subprocess, tempfile, shutil as _sh
-        from PIL import Image
         iconset = tempfile.mkdtemp(suffix=".iconset")
         try:
-            base = _master(512)
             for s in (16, 32, 64, 128, 256, 512):
                 base.resize((s, s), Image.LANCZOS).save(
                     os.path.join(iconset, f"icon_{s}x{s}.png"))
-                base.resize((min(s * 2, 512), min(s * 2, 512)), Image.LANCZOS).save(
+                d2 = min(s * 2, 512)
+                base.resize((d2, d2), Image.LANCZOS).save(
                     os.path.join(iconset, f"icon_{s}x{s}@2x.png"))
             subprocess.run(["iconutil", "-c", "icns", iconset, "-o", dst],
                            check=True)
-            print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} (iconutil)")
+            print(f"  {os.path.relpath(dst, PROJECT_ROOT)} (iconutil)")
+            return
         except Exception as e:
-            print(f"  WARNING: iconutil failed: {e}; falling back to Pillow.")
-            _icns_pillow(dst)
+            print(f"  WARNING: iconutil failed: {e}; using Pillow.")
         finally:
             _sh.rmtree(iconset, ignore_errors=True)
-    else:
-        _icns_pillow(dst)
-
-
-def _icns_pillow(dst):
     try:
-        from PIL import Image
-        base  = _master(512)
-        sizes = [(s, s) for s in (16, 32, 48, 64, 128, 256, 512)]
-        base.save(dst, format="ICNS", sizes=sizes)
-        print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} (Pillow)")
+        base.save(dst, format="ICNS",
+                  sizes=[(s, s) for s in (16, 32, 48, 64, 128, 256, 512)])
+        print(f"  {os.path.relpath(dst, PROJECT_ROOT)} (Pillow)")
     except Exception as e:
-        print(f"  WARNING: Could not generate icon.icns: {e}")
+        print(f"  WARNING: could not write {os.path.basename(dst)}: {e}")
 
 
 def main() -> None:
@@ -189,12 +166,29 @@ def main() -> None:
         print("ERROR: Pillow is required (pip install Pillow).")
         sys.exit(1)
 
-    print("Generating Drag2Music icons from assets/icon.png ...")
-    generate_png(os.path.join(ASSETS_DIR, "icon.png"), 512)  # only if missing
-    generate_ico(os.path.join(PROJECT_ROOT, "Drag2Music.ico"))
-    generate_ico(os.path.join(ASSETS_DIR, "icon.ico"))
-    generate_icns(os.path.join(ASSETS_DIR, "icon.icns"))
-    print("Icon setup complete — all formats derived from assets/icon.png.")
+    white = os.path.join(ASSETS_DIR, "icon-white.png")
+    black = os.path.join(ASSETS_DIR, "icon-black.png")
+
+    # No themed variants supplied → fall back to the procedural design.
+    if not (os.path.exists(white) or os.path.exists(black)):
+        print("No icon-white/black.png found — generating procedural icon.")
+        proc = os.path.join(ASSETS_DIR, "icon-white.png")
+        _make_icon_image(512).save(proc)
+        white = black = proc
+
+    print("Generating themed icons (Dark uses white, Light uses black) ...")
+    for variant, src in (("white", white), ("black", black)):
+        if os.path.exists(src):
+            _ico_from(src, os.path.join(ASSETS_DIR, f"icon-{variant}.ico"))
+            _icns_from(src, os.path.join(ASSETS_DIR, f"icon-{variant}.icns"))
+
+    # Static fallback used by the .exe / installer / .app bundle (can't switch
+    # at runtime) — default to the white (dark-theme) mark.
+    default = white if os.path.exists(white) else black
+    _ico_from(default,  os.path.join(PROJECT_ROOT, "Drag2Music.ico"))
+    _ico_from(default,  os.path.join(ASSETS_DIR, "icon.ico"))
+    _icns_from(default, os.path.join(ASSETS_DIR, "icon.icns"))
+    print("Icon setup complete.")
 
 
 if __name__ == "__main__":
