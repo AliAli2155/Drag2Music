@@ -128,26 +128,7 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        _here = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
-        if sys.platform == 'win32':
-            for _ico in (os.path.join(_here, 'assets', 'icon.ico'),
-                         os.path.join(_here, 'Drag2Music.ico')):
-                if os.path.exists(_ico):
-                    try:
-                        self.iconbitmap(_ico)
-                    except Exception:
-                        pass
-                    break
-        else:
-            # .ico is Windows-only; macOS/Linux titlebar icons use iconphoto
-            _png = os.path.join(_here, 'assets', 'icon.png')
-            if os.path.exists(_png):
-                try:
-                    import tkinter as _tk
-                    self._app_icon = _tk.PhotoImage(file=_png)
-                    self.iconphoto(True, self._app_icon)
-                except Exception:
-                    pass
+        self._apply_window_icon()
 
         self.setup_ui()
         self.update_ui_language()
@@ -160,6 +141,36 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
 
     def t(self, key, fallback=None):
         return TRANSLATIONS[self.current_lang].get(key, fallback if fallback is not None else key)
+
+    def _apply_window_icon(self):
+        """Pick the titlebar/taskbar icon that contrasts with the theme:
+        Dark mode → white line-art icon, Light mode → black line-art icon.
+        Safe to call repeatedly (e.g. whenever the appearance mode changes)."""
+        here = sys._MEIPASS if getattr(sys, 'frozen', False) \
+            else os.path.dirname(os.path.abspath(__file__))
+        variant = "white" if getattr(self, "current_mode", "Dark") == "Dark" else "black"
+        if sys.platform == 'win32':
+            for ico in (os.path.join(here, 'assets', f'icon-{variant}.ico'),
+                        os.path.join(here, 'assets', 'icon.ico'),
+                        os.path.join(here, 'Drag2Music.ico')):
+                if os.path.exists(ico):
+                    try:
+                        self.iconbitmap(ico)
+                    except Exception:
+                        pass
+                    break
+        else:
+            # .ico is Windows-only; macOS/Linux titlebar icons use iconphoto
+            for png in (os.path.join(here, 'assets', f'icon-{variant}.png'),
+                        os.path.join(here, 'assets', 'icon.png')):
+                if os.path.exists(png):
+                    try:
+                        import tkinter as _tk
+                        self._app_icon = _tk.PhotoImage(file=png)
+                        self.iconphoto(True, self._app_icon)
+                    except Exception:
+                        pass
+                    break
 
 
 if __name__ == "__main__":
