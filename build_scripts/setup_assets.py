@@ -25,11 +25,25 @@ GRAD_BOT = (12, 140, 58)    # deep green   (bottom)
 NOTE_CLR = (255, 255, 255)  # white music note
 
 
+def _qbez(p0, p1, p2, n=28):
+    """Quadratic-bezier polyline between three points."""
+    pts = []
+    for i in range(n + 1):
+        t = i / n
+        u = 1 - t
+        pts.append((
+            u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
+            u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1],
+        ))
+    return pts
+
+
 def _make_icon_image(size: int):
     """Master Drag2Music icon: rounded green-gradient square with a white
-    pair of beamed eighth notes. Rendered supersampled, then downscaled so
-    edges stay smooth at every output size."""
+    'download music' mark — an eighth note inside an open ring with a
+    download arrow. Rendered supersampled, then downscaled for smooth edges."""
     from PIL import Image, ImageDraw
+    import math
 
     SS = 4                       # supersample factor
     S  = size * SS
@@ -51,37 +65,55 @@ def _make_icon_image(size: int):
                                            radius=r, fill=255)
     img.paste(grad, (0, 0), mask)
 
-    draw = ImageDraw.Draw(img)
+    draw  = ImageDraw.Draw(img)
     white = (*NOTE_CLR, 255)
 
-    def px(fx, fy):
-        return (int(fx * S), int(fy * S))
+    def P(fx, fy):
+        return (fx * S, fy * S)
 
-    # ── Beamed eighth notes (the universal "music" mark) ─────────────────────
-    # Heads (slightly squashed ellipses → tilted note-head look)
-    hw, hh = 0.118, 0.092
-    lcx, lcy = 0.355, 0.700      # left head centre
-    rcx, rcy = 0.645, 0.628      # right head centre
-    sw = 0.044                   # stem width
-    beam_t = 0.082               # beam thickness
+    def cap(p, w):                       # round line cap
+        rr = w / 2
+        draw.ellipse([p[0] - rr, p[1] - rr, p[0] + rr, p[1] + rr], fill=white)
 
-    # Stems (right edge of each head, rising to the beam)
-    l_stem_x = lcx + hw - sw
-    r_stem_x = rcx + hw - sw
-    draw.rectangle([*px(l_stem_x, 0.300), *px(l_stem_x + sw, lcy)], fill=white)
-    draw.rectangle([*px(r_stem_x, 0.250), *px(r_stem_x + sw, rcy)], fill=white)
+    def stroke(pts, w):                  # thick rounded polyline
+        draw.line(pts, fill=white, width=int(w), joint="curve")
+        cap(pts[0], w)
+        cap(pts[-1], w)
 
-    # Beam (slanted bar joining the two stem tops)
-    draw.polygon([
-        px(l_stem_x,        0.300),
-        px(r_stem_x + sw,   0.250),
-        px(r_stem_x + sw,   0.250 + beam_t),
-        px(l_stem_x,        0.300 + beam_t),
-    ], fill=white)
+    # ── Open ring (gap at the bottom-right for the arrow) ─────────────────────
+    ccx, ccy, rc = 0.465, 0.450, 0.350
+    wc  = int(0.060 * S)
+    box = [P(ccx - rc, ccy - rc)[0], P(ccx - rc, ccy - rc)[1],
+           P(ccx + rc, ccy + rc)[0], P(ccx + rc, ccy + rc)[1]]
+    a0, a1 = 132, 378                    # clockwise sweep; gap ~18°..132°
+    draw.arc(box, a0, a1, fill=white, width=wc)
+    for ang in (a0, a1):
+        a = math.radians(ang)
+        cap((ccx * S + rc * S * math.cos(a),
+             ccy * S + rc * S * math.sin(a)), wc)
 
-    # Heads on top so the stem bottoms tuck in cleanly
-    for hx, hy in ((lcx, lcy), (rcx, rcy)):
-        draw.ellipse([*px(hx - hw, hy - hh), *px(hx + hw, hy + hh)], fill=white)
+    # ── Eighth note (inside, centre-left) ─────────────────────────────────────
+    wn = int(0.046 * S)
+    hx, hy, rh = 0.395, 0.605, 0.082
+    stem_x = hx + rh * 0.82
+    stroke([P(stem_x, 0.305), P(stem_x, hy)], wn)               # stem
+    stroke(_qbez(P(stem_x, 0.305), P(0.605, 0.315),
+                 P(0.555, 0.455)), wn)                          # flag hook
+    draw.ellipse([P(hx - rh, hy - rh)[0], P(hx - rh, hy - rh)[1],
+                  P(hx + rh, hy + rh)[0], P(hx + rh, hy + rh)[1]],
+                 fill=white)                                    # note head
+    # subtle accent dot in the head (echoes the reference)
+    rd = rh * 0.40
+    draw.ellipse([P(hx - rd, hy - rd)[0], P(hx - rd, hy - rd)[1],
+                  P(hx + rd, hy + rd)[0], P(hx + rd, hy + rd)[1]],
+                 fill=(GRAD_BOT[0], GRAD_BOT[1], GRAD_BOT[2], 255))
+
+    # ── Download arrow (in the bottom-right gap) ──────────────────────────────
+    wa = int(0.052 * S)
+    ax = 0.725
+    stroke([P(ax, 0.545), P(ax, 0.815)], wa)                   # shaft
+    stroke([P(ax - 0.090, 0.715), P(ax, 0.825),
+            P(ax + 0.090, 0.715)], wa)                         # head chevron
 
     return img.resize((size, size), Image.LANCZOS)
 
