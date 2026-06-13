@@ -118,36 +118,46 @@ def _make_icon_image(size: int):
     return img.resize((size, size), Image.LANCZOS)
 
 
+def _master(size):
+    """The single source-of-truth icon at `size` px (RGBA).
+
+    Prefers a hand-supplied assets/icon.png so a custom logo is honoured and
+    never overwritten; falls back to the procedural design when it is absent."""
+    from PIL import Image
+    png = os.path.join(ASSETS_DIR, "icon.png")
+    if os.path.exists(png):
+        return Image.open(png).convert("RGBA").resize((size, size), Image.LANCZOS)
+    return _make_icon_image(size)
+
+
 def generate_png(dst=None, size=512):
     dst = dst or os.path.join(ASSETS_DIR, "icon.png")
+    if os.path.exists(dst):
+        print(f"  Keeping existing {os.path.relpath(dst, PROJECT_ROOT)}")
+        return dst
     _make_icon_image(size).save(dst, format="PNG")
     print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} ({size}px)")
     return dst
 
 
 def generate_ico(dst):
-    master = _make_icon_image(256)
     sizes  = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)]
-    master.save(dst, format="ICO", sizes=sizes)
+    _master(256).save(dst, format="ICO", sizes=sizes)
     print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} (multi-size)")
 
 
 def generate_icns(dst):
-    src_png = os.path.join(ASSETS_DIR, "icon.png")
-    if not os.path.exists(src_png):
-        generate_png(src_png)
-
     if sys.platform == "darwin":
         # Highest fidelity: build a proper .iconset via iconutil
         import subprocess, tempfile, shutil as _sh
         from PIL import Image
         iconset = tempfile.mkdtemp(suffix=".iconset")
         try:
-            base = _make_icon_image(1024).convert("RGBA")
+            base = _master(512)
             for s in (16, 32, 64, 128, 256, 512):
                 base.resize((s, s), Image.LANCZOS).save(
                     os.path.join(iconset, f"icon_{s}x{s}.png"))
-                base.resize((s * 2, s * 2), Image.LANCZOS).save(
+                base.resize((min(s * 2, 512), min(s * 2, 512)), Image.LANCZOS).save(
                     os.path.join(iconset, f"icon_{s}x{s}@2x.png"))
             subprocess.run(["iconutil", "-c", "icns", iconset, "-o", dst],
                            check=True)
@@ -164,7 +174,7 @@ def generate_icns(dst):
 def _icns_pillow(dst):
     try:
         from PIL import Image
-        base  = _make_icon_image(1024).convert("RGBA")
+        base  = _master(512)
         sizes = [(s, s) for s in (16, 32, 48, 64, 128, 256, 512)]
         base.save(dst, format="ICNS", sizes=sizes)
         print(f"  Generated {os.path.relpath(dst, PROJECT_ROOT)} (Pillow)")
@@ -179,12 +189,12 @@ def main() -> None:
         print("ERROR: Pillow is required (pip install Pillow).")
         sys.exit(1)
 
-    print("Generating Drag2Music icons from master...")
+    print("Generating Drag2Music icons from assets/icon.png ...")
+    generate_png(os.path.join(ASSETS_DIR, "icon.png"), 512)  # only if missing
     generate_ico(os.path.join(PROJECT_ROOT, "Drag2Music.ico"))
     generate_ico(os.path.join(ASSETS_DIR, "icon.ico"))
-    generate_png(os.path.join(ASSETS_DIR, "icon.png"), 512)
     generate_icns(os.path.join(ASSETS_DIR, "icon.icns"))
-    print("Icon setup complete — identical artwork on all platforms.")
+    print("Icon setup complete — all formats derived from assets/icon.png.")
 
 
 if __name__ == "__main__":
