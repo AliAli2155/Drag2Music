@@ -817,22 +817,19 @@ class UISetupMixin:
         self.btn_clear.grid(row=0, column=2)
 
         # ── Big cover + Lyrics ────────────────────────────────
+        # Both cards share row 0 so they are exactly the same height and
+        # bottom-aligned; the title / artist caption lives in row 1, below
+        # the cover only, so it never makes the cards uneven.
         mf = ctk.CTkFrame(p, fg_color="transparent")
         mf.grid(row=1, column=0, sticky="nsew", padx=PADX, pady=(0, 10))
         mf.grid_columnconfigure(0, weight=11, uniform="media")
         mf.grid_columnconfigure(1, weight=9,  uniform="media")
-        mf.grid_rowconfigure(0, weight=1)
-
-        # Cover column: large artwork card + title / artist below
-        cover_col = ctk.CTkFrame(mf, fg_color="transparent")
-        cover_col.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        cover_col.grid_columnconfigure(0, weight=1)
-        cover_col.grid_rowconfigure(0, weight=1)
+        mf.grid_rowconfigure(0, weight=1)   # cards expand; row 1 (caption) natural
 
         self.preview_frame = ctk.CTkFrame(
-            cover_col, height=self.COVER_H, corner_radius=18,
+            mf, height=self.COVER_H, corner_radius=18,
             fg_color=C["card"], border_width=1, border_color=C["border2"])
-        self.preview_frame.grid(row=0, column=0, sticky="nsew")
+        self.preview_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         self.preview_frame.grid_propagate(False)
         self.preview_frame.grid_columnconfigure(0, weight=1)
         self.preview_frame.grid_rowconfigure(0, weight=1)
@@ -870,8 +867,17 @@ class UISetupMixin:
             fg_color="transparent", corner_radius=6, height=22)
         self.lbl_duration.place(relx=1.0, rely=1.0, x=-12, y=-12, anchor="se")
 
-        meta = ctk.CTkFrame(cover_col, fg_color="transparent")
-        meta.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+        # Lyrics card — shares row 0, so it matches the cover card height exactly
+        self.lyrics_frame = ctk.CTkScrollableFrame(
+            mf, corner_radius=18,
+            fg_color=C["card"], border_color=C["border2"], border_width=1,
+            label_text="📜 Lyrics", label_font=(FONT, 12, "bold"))
+        self.lyrics_frame.grid(row=0, column=1, sticky="nsew")
+        self.lyrics_frame.grid_columnconfigure(0, weight=1)
+
+        # Title / artist caption: row 1, under the cover card only
+        meta = ctk.CTkFrame(mf, fg_color="transparent")
+        meta.grid(row=1, column=0, sticky="ew", padx=(2, 10), pady=(8, 0))
         meta.grid_columnconfigure(0, weight=1)
         self.lbl_title = ctk.CTkLabel(
             meta, text="", font=(FONT, 15, "bold"),
@@ -882,14 +888,6 @@ class UISetupMixin:
             meta, text="", font=(FONT, 12), anchor="w",
             text_color=C["dim"])
         self.lbl_artist.grid(row=1, column=0, sticky="ew")
-
-        # Lyrics card (full height of the media row)
-        self.lyrics_frame = ctk.CTkScrollableFrame(
-            mf, corner_radius=18,
-            fg_color=C["card"], border_color=C["border2"], border_width=1,
-            label_text="📜 Lyrics", label_font=(FONT, 12, "bold"))
-        self.lyrics_frame.grid(row=0, column=1, sticky="nsew")
-        self.lyrics_frame.grid_columnconfigure(0, weight=1)
         self.lbl_lyrics = ctk.CTkLabel(
             self.lyrics_frame,
             text="Analyze a song to load lyrics automatically...",
