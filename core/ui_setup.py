@@ -875,19 +875,10 @@ class UISetupMixin:
         self.lyrics_frame.grid(row=0, column=1, sticky="nsew")
         self.lyrics_frame.grid_columnconfigure(0, weight=1)
 
-        # Title / artist caption: row 1, under the cover card only
-        meta = ctk.CTkFrame(mf, fg_color="transparent")
-        meta.grid(row=1, column=0, sticky="ew", padx=(2, 10), pady=(8, 0))
-        meta.grid_columnconfigure(0, weight=1)
-        self.lbl_title = ctk.CTkLabel(
-            meta, text="", font=(FONT, 15, "bold"),
-            wraplength=520, justify="left", anchor="w",
-            text_color=C["bright"])
-        self.lbl_title.grid(row=0, column=0, sticky="ew")
-        self.lbl_artist = ctk.CTkLabel(
-            meta, text="", font=(FONT, 12), anchor="w",
-            text_color=C["dim"])
-        self.lbl_artist.grid(row=1, column=0, sticky="ew")
+        # Title / artist are rendered INTO the cover artwork (see
+        # analyzer._draw_caption), so there is no caption row below the cards.
+        self._cover_title  = ""
+        self._cover_artist = ""
         self.lbl_lyrics = ctk.CTkLabel(
             self.lyrics_frame,
             text="Analyze a song to load lyrics automatically...",
