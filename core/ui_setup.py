@@ -1,7 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 from .translations import LANGUAGES
-from .constants import FORMAT_QUALITIES, C, FONT
+from .constants import FORMAT_QUALITIES, C, FONT, APP_VERSION
 
 try:
     from PIL import Image, ImageDraw
@@ -645,7 +645,8 @@ class UISetupMixin:
 
         sub = ctk.CTkFrame(sb, fg_color="transparent")
         sub.grid(row=1, column=0, sticky="ew", padx=22, pady=(0, 6))
-        ctk.CTkLabel(sub, text="Studio", font=(FONT, 12),
+        _short_ver = ".".join(APP_VERSION.split(".")[:2])   # 3.1.0 -> 3.1
+        ctk.CTkLabel(sub, text=f"Studio  ·  v{_short_ver}", font=(FONT, 12),
                      text_color=C["studio"]).pack(side="left")
         self.lbl_made_by = ctk.CTkLabel(
             sub, text="  ·  Made by Ali A.",

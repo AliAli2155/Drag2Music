@@ -3,11 +3,11 @@
 ; Output  : dist\Drag2Music_Setup.exe
 ;
 ; Build command (run from project root):
-;   iscc installer\windows\tunefetch_setup.iss
+;   iscc installer\windows\drag2music_setup.iss
 
 #define AppName       "Drag2Music: Infinity Studio"
 #define AppShortName  "Drag2Music"
-#define AppVersion    "1.0.0"
+#define AppVersion    "3.1.0"
 #define AppPublisher  "Ali A."
 #define AppURL        "https://github.com/AliAli2155/Drag2Music"
 #define AppExeName    "Drag2Music.exe"

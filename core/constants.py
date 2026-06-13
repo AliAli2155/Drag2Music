@@ -1,5 +1,8 @@
 import sys
 
+# ── App version (keep in sync with installer scripts) ────────────────────────
+APP_VERSION = "3.1.0"
+
 # ── Platform-native UI font ──────────────────────────────────────────────────
 # Tk silently falls back to a default if the family is missing, so this is safe.
 if sys.platform == "win32":
