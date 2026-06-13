@@ -51,15 +51,25 @@ from core.lyrics       import LyricsMixin
 from core.converter    import ConverterMixin
 
 
-class TuneFetch(UISetupMixin, AnalyzerMixin, DownloaderMixin,
-                SettingsMixin, LyricsMixin, ConverterMixin, ctk.CTk):
+class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
+                 SettingsMixin, LyricsMixin, ConverterMixin, ctk.CTk):
 
     def __init__(self):
-        self.history_file  = os.path.join(os.path.expanduser("~"), ".tunefetch_history.json")
+        self.history_file = os.path.join(os.path.expanduser("~"), ".drag2music_history.json")
+        # One-time migration from the old TuneFetch history file (preserves user data).
+        _old_history = os.path.join(os.path.expanduser("~"), ".tunefetch_history.json")
+        if not os.path.exists(self.history_file) and os.path.exists(_old_history):
+            try:
+                os.rename(_old_history, self.history_file)
+            except OSError:
+                pass
         self.download_path = os.path.join(os.path.expanduser("~"), "Downloads")
 
         from core.translations import LANGUAGES as _LANGS
         saved_data = self.load_data_from_disk()
+        _saved_path = saved_data.get("download_path", "")
+        if _saved_path and os.path.isdir(_saved_path):
+            self.download_path = _saved_path
         self.download_history    = saved_data.get("history", [])
         _lang                    = saved_data.get("language", "English")
         self.current_lang        = _lang if _lang in _LANGS else "English"
@@ -67,6 +77,11 @@ class TuneFetch(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         _mode                    = saved_data.get("mode", "Dark")
         self.current_mode        = _mode if _mode in ("Dark", "Light") else "Dark"
         ctk.set_appearance_mode(self.current_mode)
+
+        from core.constants import LOUDNESS_PRESETS as _LP, TARGET_SAMPLE_RATE as _SR
+        _loud                    = saved_data.get("loudness", "Off")
+        self.loudness_choice     = _loud if _loud in _LP else "Off"
+        self.target_sr           = saved_data.get("sample_rate", _SR)
 
         self.current_video_url   = ""
         self.current_video_title = ""
@@ -81,33 +96,71 @@ class TuneFetch(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         self._pending_playlist    = None
         self._last_progress_ui    = 0.0
 
+        # ── cancellation state ───────────────────────────────────────────────────
+        self._cancel_event    = threading.Event()  # set -> abort active download + stop queue
+        self._cancel_partials = set()              # filesystem paths to remove on cancel
+
         super().__init__()
 
-        self.title("TuneFetch: Infinity Studio")
-        self.geometry("1200x780")
-        self.resizable(False, False)
+        # Stay hidden while widgets are built and painted — the window then
+        # appears fully drawn instead of assembling piece by piece.
+        self.withdraw()
+
+        self.title("Drag2Music: Infinity Studio")
+
+        # Fit on small screens (e.g. 1366x768 laptops): scale the whole UI
+        # down proportionally, then centre the window.
+        _W, _H = 1200, 780
+        try:
+            _sw, _sh = self.winfo_screenwidth(), self.winfo_screenheight()
+            _scale = min(1.0, (_sw - 40) / _W, (_sh - 90) / _H)
+            if _scale < 0.999:
+                ctk.set_widget_scaling(_scale)
+                ctk.set_window_scaling(_scale)
+            _x = max(0, (_sw - int(_W * _scale)) // 2)
+            _y = max(0, (_sh - int(_H * _scale)) // 2 - 20)
+            self.geometry(f"{_W}x{_H}+{_x}+{_y}")
+        except Exception:
+            self.geometry(f"{_W}x{_H}")
+        self.minsize(1060, 700)
+        self.resizable(True, True)
         self.configure(fg_color=C["bg"])
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         _here = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
-        for _ico in (os.path.join(_here, 'assets', 'icon.ico'),
-                     os.path.join(_here, 'TuneFetch.ico')):
-            if os.path.exists(_ico):
+        if sys.platform == 'win32':
+            for _ico in (os.path.join(_here, 'assets', 'icon.ico'),
+                         os.path.join(_here, 'Drag2Music.ico')):
+                if os.path.exists(_ico):
+                    try:
+                        self.iconbitmap(_ico)
+                    except Exception:
+                        pass
+                    break
+        else:
+            # .ico is Windows-only; macOS/Linux titlebar icons use iconphoto
+            _png = os.path.join(_here, 'assets', 'icon.png')
+            if os.path.exists(_png):
                 try:
-                    self.iconbitmap(_ico)
+                    import tkinter as _tk
+                    self._app_icon = _tk.PhotoImage(file=_png)
+                    self.iconphoto(True, self._app_icon)
                 except Exception:
                     pass
-                break
 
         self.setup_ui()
         self.update_ui_language()
         self.apply_theme_color(self.current_theme_color)
         self.setup_drag_drop()
 
-    def t(self, key):
-        return TRANSLATIONS[self.current_lang].get(key, key)
+        # Reveal once the first full paint is done (one extra idle cycle).
+        self.update_idletasks()
+        self.after(30, self.deiconify)
+
+    def t(self, key, fallback=None):
+        return TRANSLATIONS[self.current_lang].get(key, fallback if fallback is not None else key)
 
 
 if __name__ == "__main__":
-    TuneFetch().mainloop()
+    Drag2Music().mainloop()

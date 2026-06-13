@@ -1,4 +1,4 @@
-# TuneFetch: Infinity Studio — Build Guide
+# Drag2Music: Infinity Studio — Build Guide
 
 This document explains how to build native installers for Windows, macOS, and Linux from source.
 
@@ -40,7 +40,7 @@ sudo apt install python3 python3-pip python3-tk python3-dev \
 
 ## Build Commands
 
-### Windows — produces `dist\TuneFetch_Setup.exe`
+### Windows — produces `dist\Drag2Music_Setup.exe`
 
 Double-click **`build_scripts\build_windows.bat`**, or from a terminal:
 
@@ -52,12 +52,12 @@ The script:
 1. `pip install -r requirements.txt`
 2. Generates icon assets (`build_scripts/setup_assets.py`)
 3. Downloads `ffmpeg-release-essentials.zip` for Windows → `ffmpeg_bins/windows/ffmpeg.exe`
-4. Runs `pyinstaller tunefetch.spec --clean --noconfirm` → `dist/TuneFetch/`
-5. Runs `iscc installer\windows\tunefetch_setup.iss` → `dist/TuneFetch_Setup.exe`
+4. Runs `pyinstaller drag2music.spec --clean --noconfirm` → `dist/Drag2Music/`
+5. Runs `iscc installer\windows\tunefetch_setup.iss` → `dist/Drag2Music_Setup.exe`
 
 ---
 
-### macOS — produces `dist/TuneFetch.dmg`
+### macOS — produces `dist/Drag2Music.dmg`
 
 ```bash
 chmod +x build_scripts/build_macos.sh
@@ -68,12 +68,12 @@ The script:
 1. `pip3 install -r requirements.txt`
 2. Generates icon assets (including `.icns` via `iconutil`)
 3. Downloads static ffmpeg for macOS → `ffmpeg_bins/macos/ffmpeg`
-4. Runs PyInstaller → `dist/TuneFetch.app`
-5. Runs `installer/macos/create_dmg.sh` → `dist/TuneFetch.dmg`
+4. Runs PyInstaller → `dist/Drag2Music.app`
+5. Runs `installer/macos/create_dmg.sh` → `dist/Drag2Music.dmg`
 
 ---
 
-### Linux — produces `TuneFetch-x86_64.AppImage` **and** `tunefetch_1.0.0_amd64.deb`
+### Linux — produces `Drag2Music-x86_64.AppImage` **and** `drag2music_1.0.0_amd64.deb`
 
 ```bash
 chmod +x build_scripts/build_linux.sh
@@ -84,10 +84,10 @@ The script:
 1. `pip3 install -r requirements.txt`
 2. Generates icon assets
 3. Downloads `ffmpeg-release-amd64-static.tar.xz` → `ffmpeg_bins/linux/ffmpeg`
-4. Runs PyInstaller → `dist/TuneFetch/`
+4. Runs PyInstaller → `dist/Drag2Music/`
 5. Runs `installer/linux/create_appimage.sh`:
    - Downloads `appimagetool` from GitHub AppImageKit releases
-   - Builds `AppDir/` structure and produces `TuneFetch-x86_64.AppImage`
+   - Builds `AppDir/` structure and produces `Drag2Music-x86_64.AppImage`
    - Builds a `.deb` package via `dpkg-deb`
 
 ---
@@ -106,7 +106,7 @@ python build_scripts/setup_assets.py
 
 ### PyInstaller only (after ffmpeg + icons are ready)
 ```bash
-pyinstaller tunefetch.spec --clean --noconfirm
+pyinstaller drag2music.spec --clean --noconfirm
 ```
 
 ---
@@ -114,11 +114,11 @@ pyinstaller tunefetch.spec --clean --noconfirm
 ## Project Structure
 
 ```
-TuneFetch/
+Drag2Music/
 ├── main.py                          Entry point
 ├── core/                            Python package (player, downloader, etc.)
 ├── assets/
-│   ├── icon.ico                     Windows icon (auto-generated from TuneFetch.ico)
+│   ├── icon.ico                     Windows icon (auto-generated from Drag2Music.ico)
 │   ├── icon.icns                    macOS icon (auto-generated)
 │   └── icon.png                     Linux / generic icon (512×512)
 ├── ffmpeg_bins/
@@ -135,7 +135,7 @@ TuneFetch/
 │   ├── windows/tunefetch_setup.iss  Inno Setup 6 installer script
 │   ├── macos/create_dmg.sh          hdiutil DMG creator
 │   └── linux/create_appimage.sh     AppImage + .deb builder
-├── tunefetch.spec                   PyInstaller spec (all platforms)
+├── drag2music.spec                  PyInstaller spec (all platforms)
 ├── requirements.txt                 Python dependencies
 └── README_BUILD.md                  This file
 ```
@@ -146,18 +146,18 @@ TuneFetch/
 
 ### `ModuleNotFoundError: pygame` at runtime (frozen app)
 The spec already lists `pygame` and `pygame.mixer` as `hiddenimports`. If the error persists,
-add `pygame._sdl2` to `hiddenimports` in `tunefetch.spec` and rebuild.
+add `pygame._sdl2` to `hiddenimports` in `drag2music.spec` and rebuild.
 
 ### customtkinter themes not found / blank UI
 Verify that the `customtkinter/assets` directory was included. After building, check:
 ```
-dist/TuneFetch/customtkinter/assets/themes/
+dist/Drag2Music/customtkinter/assets/themes/
 ```
 If missing, run `pyinstaller` again — the spec's glob-based asset collection should fix it.
 
 ### `ffmpeg` not found at runtime in frozen bundle
 Ensure `build_scripts/download_ffmpeg.py` ran successfully before `pyinstaller`.
-Check that `dist/TuneFetch/ffmpeg_bins/<platform>/ffmpeg[.exe]` exists.
+Check that `dist/Drag2Music/ffmpeg_bins/<platform>/ffmpeg[.exe]` exists.
 The `main.py` frozen-path injection at the top of the file sets `FFMPEG_BINARY` and prepends
 the ffmpeg directory to `PATH` automatically when `sys.frozen` is `True`.
 
@@ -170,7 +170,7 @@ build_scripts\build_windows.bat
 
 ### `hdiutil: create failed` (macOS)
 Ensure enough free disk space (the writable intermediate image is ~500 MB).
-Check that `dist/TuneFetch.app` was created by PyInstaller before running `create_dmg.sh`.
+Check that `dist/Drag2Music.app` was created by PyInstaller before running `create_dmg.sh`.
 
 ### AppImage fails with `FUSE not available` (Linux)
 ```bash

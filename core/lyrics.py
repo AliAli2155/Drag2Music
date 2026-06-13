@@ -1,11 +1,11 @@
 import re
-import requests
 from .constants import C
 
 
 class LyricsMixin:
 
     def auto_find_lyrics(self, title, video_url=""):
+        import requests   # deferred: keeps app startup fast
         self.after(0, lambda: self.lbl_lyrics.configure(
             text=self.t("lyrics_searching"), text_color=self.current_theme_color))
 

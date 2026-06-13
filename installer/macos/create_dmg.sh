@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TuneFetch: Infinity Studio — macOS .dmg creator
+# Drag2Music: Infinity Studio — macOS .dmg creator
 # Called by build_scripts/build_macos.sh after PyInstaller completes.
 # Requires: hdiutil (bundled with macOS), optional: AppleScript for custom layout
 set -euo pipefail
@@ -8,12 +8,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$PROJECT_ROOT"
 
-APP_NAME="TuneFetch"
+APP_NAME="Drag2Music"
 APP_BUNDLE="dist/${APP_NAME}.app"
 DMG_NAME="${APP_NAME}"
 DMG_OUT="dist/${DMG_NAME}.dmg"
 TMP_DIR="$(mktemp -d)"
-VOLUME_NAME="TuneFetch Infinity Studio"
+VOLUME_NAME="Drag2Music Infinity Studio"
 
 echo "[DMG] Checking for built .app..."
 if [ ! -d "$APP_BUNDLE" ]; then

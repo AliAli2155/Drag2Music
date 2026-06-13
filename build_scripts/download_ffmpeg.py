@@ -54,7 +54,7 @@ def _progress_hook(downloaded: int, total: int) -> None:
 
 def download_with_retry(url: str, dest_path: str, max_retries: int = 3, timeout: int = 180) -> None:
     """Download *url* to *dest_path* with exponential-backoff retry."""
-    headers = {"User-Agent": "TuneFetch-Installer/1.0 (+https://github.com/AliAli2155/TuneFetch)"}
+    headers = {"User-Agent": "Drag2Music-Installer/1.0 (+https://github.com/AliAli2155/Drag2Music)"}
     for attempt in range(1, max_retries + 1):
         try:
             print(f"  Attempt {attempt}/{max_retries} -> {url}")
@@ -226,7 +226,7 @@ def _detect_current_platform() -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Download static ffmpeg binaries for TuneFetch packaging"
+        description="Download static ffmpeg binaries for Drag2Music packaging"
     )
     parser.add_argument(
         "--platform",

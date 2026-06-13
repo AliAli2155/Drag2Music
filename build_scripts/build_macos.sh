@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TuneFetch: Infinity Studio — macOS Build Script
+# Drag2Music: Infinity Studio — macOS Build Script
 # Usage: chmod +x build_scripts/build_macos.sh && ./build_scripts/build_macos.sh
 set -euo pipefail
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 echo "============================================================"
-echo " TuneFetch: Infinity Studio — macOS Build"
+echo " Drag2Music: Infinity Studio — macOS Build"
 echo "============================================================"
 echo "[INFO] Project root: $PROJECT_ROOT"
 echo
@@ -29,8 +29,8 @@ python3 build_scripts/download_ffmpeg.py --platform macos
 echo
 
 # ── Step 4: PyInstaller ──────────────────────────────────────────────────────
-echo "[STEP 4/5] Running PyInstaller (onedir → TuneFetch.app)..."
-pyinstaller tunefetch.spec --clean --noconfirm
+echo "[STEP 4/5] Running PyInstaller (onedir → Drag2Music.app)..."
+pyinstaller drag2music.spec --clean --noconfirm
 echo
 
 # ── Step 5: Create DMG ───────────────────────────────────────────────────────
@@ -41,6 +41,6 @@ echo
 
 echo "============================================================"
 echo " Build complete!"
-echo " App     : dist/TuneFetch.app"
-echo " Disk img: dist/TuneFetch.dmg"
+echo " App     : dist/Drag2Music.app"
+echo " Disk img: dist/Drag2Music.dmg"
 echo "============================================================"

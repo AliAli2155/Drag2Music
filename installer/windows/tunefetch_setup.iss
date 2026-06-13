@@ -1,17 +1,17 @@
-; TuneFetch: Infinity Studio — Inno Setup Script
+; Drag2Music: Infinity Studio — Inno Setup Script
 ; Compiler: Inno Setup 6.x
-; Output  : dist\TuneFetch_Setup.exe
+; Output  : dist\Drag2Music_Setup.exe
 ;
 ; Build command (run from project root):
 ;   iscc installer\windows\tunefetch_setup.iss
 
-#define AppName       "TuneFetch: Infinity Studio"
-#define AppShortName  "TuneFetch"
+#define AppName       "Drag2Music: Infinity Studio"
+#define AppShortName  "Drag2Music"
 #define AppVersion    "1.0.0"
 #define AppPublisher  "Ali A."
-#define AppURL        "https://github.com/AliAli2155/TuneFetch"
-#define AppExeName    "TuneFetch.exe"
-#define AppDataFile   ".tunefetch_history.json"
+#define AppURL        "https://github.com/AliAli2155/Drag2Music"
+#define AppExeName    "Drag2Music.exe"
+#define AppDataFile   ".drag2music_history.json"
 
 [Setup]
 ; Application identity
@@ -33,8 +33,8 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; Output
 OutputDir=..\..\dist
-OutputBaseFilename=TuneFetch_Setup
-SetupIconFile=..\..\TuneFetch.ico
+OutputBaseFilename=Drag2Music_Setup
+SetupIconFile=..\..\Drag2Music.ico
 
 ; Compression
 Compression=lzma2/ultra64
@@ -70,8 +70,8 @@ Name: "desktopicon";    Description: "{cm:CreateDesktopIcon}";    GroupDescripti
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-; Main application directory (entire dist\TuneFetch\ tree)
-Source: "..\..\dist\TuneFetch\*";  DestDir: "{app}";  Flags: ignoreversion recursesubdirs createallsubdirs
+; Main application directory (entire dist\Drag2Music\ tree)
+Source: "..\..\dist\Drag2Music\*";  DestDir: "{app}";  Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 ; Start Menu
@@ -89,7 +89,7 @@ Filename: "{app}\{#AppExeName}";  Description: "{cm:LaunchProgram,{#StringChange
 ; Nothing extra to run on uninstall
 
 [UninstallDelete]
-; Clean up the app-data history file on uninstall (~/.tunefetch_history.json)
+; Clean up the app-data history file on uninstall (~/.drag2music_history.json)
 Type: files;        Name: "{userdocs}\..\{#AppDataFile}"
 ; Remove the temp preview file if leftover
 Type: filesandordirs; Name: "{userdocs}\..\tf_preview*"
@@ -118,7 +118,7 @@ begin
   if not VCRedistInstalled then begin
     MsgBox(
       'Note: The Visual C++ 2015-2022 Runtime was not detected on this PC.' + #13#10 +
-      'TuneFetch bundles all required files and will likely work fine.' + #13#10 +
+      'Drag2Music bundles all required files and will likely work fine.' + #13#10 +
       'If the app does not start, install the free runtime from microsoft.com/en-us/download (search: vc_redist.x64.exe).',
       mbInformation, MB_OK);
   end;

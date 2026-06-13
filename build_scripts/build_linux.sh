@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TuneFetch: Infinity Studio — Linux Build Script
+# Drag2Music: Infinity Studio — Linux Build Script
 # Usage: chmod +x build_scripts/build_linux.sh && ./build_scripts/build_linux.sh
 set -euo pipefail
 
@@ -8,7 +8,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
 echo "============================================================"
-echo " TuneFetch: Infinity Studio — Linux Build"
+echo " Drag2Music: Infinity Studio — Linux Build"
 echo "============================================================"
 echo "[INFO] Project root: $PROJECT_ROOT"
 echo
@@ -30,7 +30,7 @@ echo
 
 # ── Step 4: PyInstaller ──────────────────────────────────────────────────────
 echo "[STEP 4/5] Running PyInstaller (onedir)..."
-pyinstaller tunefetch.spec --clean --noconfirm
+pyinstaller drag2music.spec --clean --noconfirm
 echo
 
 # ── Step 5: AppImage + .deb ──────────────────────────────────────────────────
@@ -41,7 +41,7 @@ echo
 
 echo "============================================================"
 echo " Build complete!"
-echo " App dir  : dist/TuneFetch/"
-echo " AppImage : TuneFetch-x86_64.AppImage"
-echo " Deb pkg  : tunefetch_1.0.0_amd64.deb"
+echo " App dir  : dist/Drag2Music/"
+echo " AppImage : Drag2Music-x86_64.AppImage"
+echo " Deb pkg  : drag2music_1.0.0_amd64.deb"
 echo "============================================================"

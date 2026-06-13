@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 echo ============================================================
-echo  TuneFetch: Infinity Studio — Windows Build Script
+echo  Drag2Music: Infinity Studio — Windows Build Script
 echo ============================================================
 echo.
 
@@ -41,7 +41,7 @@ echo.
 
 :: ── Step 4: PyInstaller build ────────────────────────────────────────────────
 echo [STEP 4/5] Running PyInstaller...
-pyinstaller tunefetch.spec --clean --noconfirm
+pyinstaller drag2music.spec --clean --noconfirm
 if errorlevel 1 (
     echo [ERROR] PyInstaller build failed.
     exit /b 1
@@ -89,7 +89,7 @@ echo.
 :build_done
 echo ============================================================
 echo  Build complete!
-echo  Installer : dist\TuneFetch_Setup.exe
-echo  App folder: dist\TuneFetch\
+echo  Installer : dist\Drag2Music_Setup.exe
+echo  App folder: dist\Drag2Music\
 echo ============================================================
 endlocal
