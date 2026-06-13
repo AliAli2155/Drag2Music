@@ -143,15 +143,11 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         return TRANSLATIONS[self.current_lang].get(key, fallback if fallback is not None else key)
 
     def _apply_window_icon(self):
-        """Pick the titlebar/taskbar icon that contrasts with the theme:
-        Dark mode → white line-art icon, Light mode → black line-art icon.
-        Safe to call repeatedly (e.g. whenever the appearance mode changes)."""
+        """Set the titlebar/taskbar icon — a single, theme-independent icon."""
         here = sys._MEIPASS if getattr(sys, 'frozen', False) \
             else os.path.dirname(os.path.abspath(__file__))
-        variant = "white" if getattr(self, "current_mode", "Dark") == "Dark" else "black"
         if sys.platform == 'win32':
-            for ico in (os.path.join(here, 'assets', f'icon-{variant}.ico'),
-                        os.path.join(here, 'assets', 'icon.ico'),
+            for ico in (os.path.join(here, 'assets', 'icon.ico'),
                         os.path.join(here, 'Drag2Music.ico')):
                 if os.path.exists(ico):
                     try:
@@ -161,16 +157,14 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
                     break
         else:
             # .ico is Windows-only; macOS/Linux titlebar icons use iconphoto
-            for png in (os.path.join(here, 'assets', f'icon-{variant}.png'),
-                        os.path.join(here, 'assets', 'icon.png')):
-                if os.path.exists(png):
-                    try:
-                        import tkinter as _tk
-                        self._app_icon = _tk.PhotoImage(file=png)
-                        self.iconphoto(True, self._app_icon)
-                    except Exception:
-                        pass
-                    break
+            png = os.path.join(here, 'assets', 'icon.png')
+            if os.path.exists(png):
+                try:
+                    import tkinter as _tk
+                    self._app_icon = _tk.PhotoImage(file=png)
+                    self.iconphoto(True, self._app_icon)
+                except Exception:
+                    pass
 
 
 if __name__ == "__main__":
