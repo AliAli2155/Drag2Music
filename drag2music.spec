@@ -186,8 +186,8 @@ if sys.platform == "darwin":
         bundle_identifier="com.ali.drag2music",
         info_plist={
             "CFBundleDisplayName":        "Drag2Music: Infinity Studio",
-            "CFBundleShortVersionString":  "1.0.0",
-            "CFBundleVersion":            "1.0.0",
+            "CFBundleShortVersionString":  "3.1.0",
+            "CFBundleVersion":            "3.1.0",
             "NSHighResolutionCapable":    True,
             "NSRequiresAquaSystemAppearance": False,
             "LSMinimumSystemVersion":     "10.14.0",

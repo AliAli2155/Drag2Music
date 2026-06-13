@@ -106,7 +106,7 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         # appears fully drawn instead of assembling piece by piece.
         self.withdraw()
 
-        self.title("Drag2Music: Infinity Studio")
+        self.title("Drag2Music")
 
         # Fit on small screens (e.g. 1366x768 laptops): scale the whole UI
         # down proportionally, then centre the window.

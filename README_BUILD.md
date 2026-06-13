@@ -53,7 +53,7 @@ The script:
 2. Generates icon assets (`build_scripts/setup_assets.py`)
 3. Downloads `ffmpeg-release-essentials.zip` for Windows → `ffmpeg_bins/windows/ffmpeg.exe`
 4. Runs `pyinstaller drag2music.spec --clean --noconfirm` → `dist/Drag2Music/`
-5. Runs `iscc installer\windows\tunefetch_setup.iss` → `dist/Drag2Music_Setup.exe`
+5. Runs `iscc installer\windows\drag2music_setup.iss` → `dist/Drag2Music_Setup.exe`
 
 ---
 
@@ -132,7 +132,7 @@ Drag2Music/
 │   ├── download_ffmpeg.py           Downloads static ffmpeg binaries
 │   └── setup_assets.py             Generates icon.ico / icon.png / icon.icns
 ├── installer/
-│   ├── windows/tunefetch_setup.iss  Inno Setup 6 installer script
+│   ├── windows/drag2music_setup.iss  Inno Setup 6 installer script
 │   ├── macos/create_dmg.sh          hdiutil DMG creator
 │   └── linux/create_appimage.sh     AppImage + .deb builder
 ├── drag2music.spec                  PyInstaller spec (all platforms)

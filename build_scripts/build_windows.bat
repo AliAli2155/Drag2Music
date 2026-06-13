@@ -74,12 +74,12 @@ for %%P in (
 echo [WARNING] Inno Setup not found. Skipping installer creation.
 echo   To build the installer manually, install Inno Setup 6 from:
 echo   https://jrsoftware.org/isinfo.php
-echo   Then run: iscc installer\windows\tunefetch_setup.iss
+echo   Then run: iscc installer\windows\drag2music_setup.iss
 goto :build_done
 
 :found_iscc
 echo [INFO] Using ISCC: %ISCC%
-"%ISCC%" installer\windows\tunefetch_setup.iss
+"%ISCC%" installer\windows\drag2music_setup.iss
 if errorlevel 1 (
     echo [ERROR] Inno Setup compilation failed.
     exit /b 1
