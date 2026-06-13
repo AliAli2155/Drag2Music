@@ -24,12 +24,13 @@ AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases
 
-; Installation target
+; Installation target — per-user install, NO administrator rights needed.
+; Installs to {localappdata}\Programs\Drag2Music (e.g. for a single user).
+; This avoids the UAC / "all users" prompt and the Program Files access error.
 DefaultDirName={autopf}\{#AppShortName}
 DefaultGroupName={#AppShortName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
 
 ; Output
 OutputDir=..\..\dist
