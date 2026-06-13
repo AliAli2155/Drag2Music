@@ -82,16 +82,16 @@ def _make_icon_image(size: int):
         cap(pts[-1], w)
 
     # ── Open ring (nearly full circle, opening at the bottom) ─────────────────
+    # Drawn as a continuous polyline rather than draw.arc: arc ends slightly
+    # short of its rounded cap, which leaves a gap that reads as a stray dot.
     ccx, ccy, rc = 0.490, 0.460, 0.410
     wc  = int(0.058 * S)
-    box = [P(ccx - rc, ccy - rc)[0], P(ccx - rc, ccy - rc)[1],
-           P(ccx + rc, ccy + rc)[0], P(ccx + rc, ccy + rc)[1]]
     a0, a1 = 92, 372                     # bottom (6 o'clock) → right (~4 o'clock)
-    draw.arc(box, a0, a1, fill=white, width=wc)
-    for ang in (a0, a1):
-        a = math.radians(ang)
-        cap((ccx * S + rc * S * math.cos(a),
-             ccy * S + rc * S * math.sin(a)), wc)
+    n = 160
+    ring_pts = [(ccx * S + rc * S * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+                 ccy * S + rc * S * math.sin(math.radians(a0 + (a1 - a0) * i / n)))
+                for i in range(n + 1)]
+    stroke(ring_pts, wc)
 
     # ── Eighth note (inside, centre) ──────────────────────────────────────────
     wn = int(0.046 * S)
