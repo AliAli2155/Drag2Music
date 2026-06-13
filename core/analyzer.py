@@ -16,16 +16,21 @@ except AttributeError:
 from .audio_quality import source_quality
 
 
-def _pil_font(size):
+def _pil_font(size, bold=False):
     """Best-effort platform UI font for PIL text rendering."""
     if sys.platform == "win32":
-        names = ["segoeui.ttf", "arial.ttf"]
+        names = (["segoeuib.ttf", "arialbd.ttf"] if bold
+                 else ["segoeui.ttf", "arial.ttf"])
     elif sys.platform == "darwin":
-        names = ["/System/Library/Fonts/Helvetica.ttc",
-                 "/System/Library/Fonts/HelveticaNeue.ttc"]
+        names = (["/System/Library/Fonts/HelveticaNeue.ttc",
+                  "/Library/Fonts/Arial Bold.ttf"] if bold
+                 else ["/System/Library/Fonts/Helvetica.ttc",
+                       "/System/Library/Fonts/HelveticaNeue.ttc"])
     else:
-        names = ["DejaVuSans.ttf",
-                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
+        names = (["DejaVuSans-Bold.ttf",
+                  "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"] if bold
+                 else ["DejaVuSans.ttf",
+                       "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"])
     for n in names:
         try:
             return ImageFont.truetype(n, size)
@@ -42,6 +47,39 @@ def _strip_emoji(s):
         line for line in
         "".join(ch for ch in (s or "") if ord(ch) < 0x1F000).splitlines()
         if line.strip()).strip()
+
+
+def _ellipsize(draw, text, font, max_w):
+    """Trim `text` with a trailing ellipsis so it fits within `max_w` px."""
+    if draw.textlength(text, font=font) <= max_w:
+        return text
+    while text and draw.textlength(text + "…", font=font) > max_w:
+        text = text[:-1]
+    return (text.rstrip() + "…") if text else ""
+
+
+def _wrap_lines(draw, text, font, max_w, max_lines):
+    """Greedy word-wrap into at most `max_lines`, ellipsising any overflow."""
+    words = (text or "").split()
+    lines, cur = [], ""
+    for w in words:
+        test = (cur + " " + w).strip()
+        if cur and draw.textlength(test, font=font) > max_w:
+            lines.append(cur)
+            cur = w
+            if len(lines) >= max_lines:
+                cur = ""
+                break
+        else:
+            cur = test
+    if cur and len(lines) < max_lines:
+        lines.append(cur)
+    placed = sum(len(l.split()) for l in lines)
+    if placed < len(words) and lines:        # ran out of lines → overflow
+        lines[-1] = _ellipsize(draw, lines[-1] + " …", font, max_w)
+    # Final safety: ellipsise any single over-long line (e.g. one huge word)
+    return [l if draw.textlength(l, font=font) <= max_w
+            else _ellipsize(draw, l, font, max_w) for l in lines]
 
 
 class AnalyzerMixin:
@@ -61,6 +99,46 @@ class AnalyzerMixin:
                 w.lower()
         except Exception:
             pass
+
+    def _draw_caption(self, img, fw, fh):
+        """Paint the title/artist over the bottom of a cover image, behind a
+        dark bottom-up gradient scrim so the text stays readable on any art.
+        Operates in place on an RGBA image; a no-op when there is no title."""
+        title  = _strip_emoji(getattr(self, "_cover_title", "") or "")
+        artist = _strip_emoji(getattr(self, "_cover_artist", "") or "")
+        if not title and not artist:
+            return
+        draw = ImageDraw.Draw(img, "RGBA")
+
+        # Scrim: fully transparent at the top, darkening toward the bottom.
+        scrim_h = max(52, int(fh * 0.42))
+        col = Image.new("L", (1, scrim_h))
+        for y in range(scrim_h):
+            t = y / max(1, scrim_h - 1)
+            col.putpixel((0, y), int(210 * (t ** 1.5)))   # ease-in darkening
+        scrim = Image.new("RGBA", (fw, scrim_h), (0, 0, 0, 255))
+        scrim.putalpha(col.resize((fw, scrim_h)))
+        img.alpha_composite(scrim, (0, fh - scrim_h))
+
+        pad     = max(12, int(fw * 0.045))
+        fs_t    = max(15, int(min(fw, fh) * 0.058))
+        fs_a    = max(12, int(min(fw, fh) * 0.044))
+        f_title = _pil_font(fs_t, bold=True)
+        f_art   = _pil_font(fs_a)
+
+        title_lines = _wrap_lines(draw, title, f_title, fw - 2 * pad, 2)
+        # Reserve the bottom-right corner for the duration badge
+        artist = _ellipsize(draw, artist, f_art, fw - 2 * pad - int(fw * 0.18))
+
+        lh_t  = int(fs_t * 1.2)
+        lh_a  = int(fs_a * 1.35)
+        total = len(title_lines) * lh_t + (lh_a if artist else 0)
+        y     = fh - pad - total
+        for ln in title_lines:
+            draw.text((pad, y), ln, font=f_title, fill=(255, 255, 255, 255))
+            y += lh_t
+        if artist:
+            draw.text((pad, y), artist, font=f_art, fill=(208, 208, 208, 255))
 
     def _hide_thumbnail(self, status_key="thumb_ready", literal=None):
         """Clear the artwork and show the gradient idle art with a status
@@ -144,6 +222,9 @@ class AnalyzerMixin:
             except Exception:
                 pass
 
+        # Playlist name (or any title) baked into the bottom over a scrim
+        self._draw_caption(img, fw, fh)
+
         # Rounded corners composited over the window bg (same as the cover)
         ss = 2
         mask = Image.new("L", (fw * ss, fh * ss), 0)
@@ -207,6 +288,9 @@ class AnalyzerMixin:
             y0 = (raw.height - new_h) // 2
             box = (0, y0, raw.width, y0 + new_h)
         img = raw.crop(box).resize((fw, fh), _LANCZOS).convert("RGBA")
+
+        # Title / artist baked into the bottom of the artwork
+        self._draw_caption(img, fw, fh)
 
         # Rounded corners (4x supersampled mask for smooth edges),
         # composited over the window background so the card blends in.
@@ -290,9 +374,9 @@ class AnalyzerMixin:
         self.track_duration      = 0
         self._pending_playlist   = None
 
+        self._cover_title = ""          # cleared before the idle art renders
+        self._cover_artist = ""
         self._hide_thumbnail()
-        self.lbl_title.configure(text="")
-        self.lbl_artist.configure(text="")
         self._set_badge(self.lbl_source_badge, "")
         self._set_badge(self.lbl_quality_badge, "")
         self.lbl_lyrics.configure(text=self.t("lyrics_placeholder"),
@@ -320,11 +404,13 @@ class AnalyzerMixin:
 
         self.after(0, lambda: self.btn_search.configure(
             state="disabled", text=self.t("analyzing")))
-        self.after(0, lambda: self._hide_thumbnail("loading"))
-        self.after(0, lambda: (
-            self._set_badge(self.lbl_source_badge, ""),
-            self._set_badge(self.lbl_quality_badge, ""),
-            self.lbl_artist.configure(text="")))
+        def _begin():
+            self._cover_title = ""      # drop the previous song's caption
+            self._cover_artist = ""
+            self._hide_thumbnail("loading")
+            self._set_badge(self.lbl_source_badge, "")
+            self._set_badge(self.lbl_quality_badge, "")
+        self.after(0, _begin)
         try:
             sq      = q if q.startswith("http") else f"ytsearch1:{q}"
             is_list = any(k in sq for k in ("list=", "/playlist?", "/sets/"))
@@ -408,19 +494,23 @@ class AnalyzerMixin:
             if stale():
                 return
 
+            # Caption is set before the artwork renders so it bakes straight in
             if new_pil_img:
-                def _apply_thumb(pil=new_pil_img):
+                def _apply_thumb(pil=new_pil_img, t=ttxt, a=artist):
                     if stale():
                         return
+                    self._cover_title  = t
+                    self._cover_artist = a
                     self._thumb_pil_raw = pil
                     self._render_cover(animate=True)
                 self.after(0, _apply_thumb)
             else:
-                self.after(0, self._hide_thumbnail)
+                def _no_thumb(t=ttxt, a=artist):
+                    self._cover_title  = t
+                    self._cover_artist = a
+                    self._hide_thumbnail()
+                self.after(0, _no_thumb)
 
-            self.after(0, lambda t=ttxt, a=artist: (
-                self.lbl_title.configure(text=t),
-                self.lbl_artist.configure(text=a)))
             if dtxt:
                 self.after(0, lambda d=dtxt: self._set_badge(
                     self.lbl_duration, f" ⏱ {d} ", "#1c1c1c"))
@@ -470,11 +560,13 @@ class AnalyzerMixin:
         badge_text, badge_color = self._source_badge(pl_url)
         self.after(0, lambda t=badge_text, c=badge_color:
                    self._set_badge(self.lbl_source_badge, t, c))
-        # Hide any thumbnail left over from a previous single-track analysis
-        self.after(0, lambda n=n: self._hide_thumbnail(literal=f"{n} tracks"))
-        self.after(0, lambda t=title[:90]: (
-            self.lbl_title.configure(text=f"📋  {t}"),
-            self.lbl_artist.configure(text="")))
+        # Hide any thumbnail left over from a previous single-track analysis;
+        # the playlist name is baked into the idle art as the caption.
+        def _show_pl(t=title[:90], n=n):
+            self._cover_title  = t
+            self._cover_artist = ""
+            self._hide_thumbnail(literal=f"{n} tracks")
+        self.after(0, _show_pl)
         qa = self.t("queue_all", "QUEUE ALL")
         self.after(0, lambda n=n, qa=qa: self.btn_download.configure(
             state="normal", text=f"{qa}  ({n})"))
