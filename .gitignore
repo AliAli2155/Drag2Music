@@ -32,6 +32,7 @@ MANIFEST
 *.manifest
 *.spec
 !drag2music.spec
+!dj_pack/worker.spec
 
 # Installer logs
 pip-log.txt

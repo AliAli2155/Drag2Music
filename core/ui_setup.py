@@ -1,7 +1,8 @@
 import tkinter as tk
 import customtkinter as ctk
 from .translations import LANGUAGES
-from .constants import FORMAT_QUALITIES, C, FONT, APP_VERSION
+from .constants import (FORMAT_QUALITIES, C, FONT, APP_VERSION,
+                       STEM_ENGINES, DEFAULT_STEM_ENGINE)
 
 try:
     from PIL import Image, ImageDraw
@@ -602,7 +603,7 @@ class UISetupMixin:
         self._page_container = container
 
         self.pages = {}
-        for name in ("download", "converter", "library"):
+        for name in ("download", "converter", "djtools", "library"):
             # Transparent is safe here: _select_page grid_remove()s hidden
             # pages, so only one page is ever mapped at a time.
             page = ctk.CTkFrame(container, fg_color="transparent",
@@ -613,10 +614,12 @@ class UISetupMixin:
         # Aliases kept for the other mixins
         self.tab_down = self.pages["download"]
         self.tab_conv = self.pages["converter"]
+        self.tab_dj   = self.pages["djtools"]
         self.tab_play = self.pages["library"]
 
         self.setup_download_tab()
         self.setup_converter_tab()
+        self.setup_djtools_tab()
         self.setup_library_tab()
         self._setup_scroll_isolation()
 
@@ -645,7 +648,7 @@ class UISetupMixin:
 
         sub = ctk.CTkFrame(sb, fg_color="transparent")
         sub.grid(row=1, column=0, sticky="ew", padx=22, pady=(0, 6))
-        _short_ver = ".".join(APP_VERSION.split(".")[:2])   # 3.1.0 -> 3.1
+        _short_ver = ".".join(APP_VERSION.split(".")[:2])   # 3.2.0 -> 3.2
         self.lbl_made_by = ctk.CTkLabel(
             sub, text=f"v{_short_ver}  ·  Made by Ali A.",
             font=(FONT, 10), text_color=C["dim"])
@@ -663,7 +666,7 @@ class UISetupMixin:
         nav.grid(row=3, column=0, sticky="ew", padx=12)
         nav.grid_columnconfigure(0, weight=1)
         self.nav_buttons = {}
-        for i, name in enumerate(("download", "converter", "library")):
+        for i, name in enumerate(("download", "converter", "djtools", "library")):
             btn = ctk.CTkButton(
                 nav, text="", height=44, corner_radius=12,
                 font=(FONT, 13, "bold"), anchor="w",
@@ -722,6 +725,8 @@ class UISetupMixin:
             text="   " + t("tab_download", "📥 Download"))
         self.nav_buttons["converter"].configure(
             text="   " + t("tab_converter", "🔄 Converter"))
+        self.nav_buttons["djtools"].configure(
+            text="   " + t("tab_djtools", "🎚 DJ Tools"))
         self.nav_buttons["library"].configure(
             text="   " + t("tab_library", "🎶 Library"))
 
@@ -1101,6 +1106,140 @@ class UISetupMixin:
             self.conv_qual_frame.pack(pady=4, before=self.conv_status_label)
         else:
             self.conv_qual_frame.pack_forget()
+
+    # ── DJ Tools Page ─────────────────────────────────────────────────────────
+
+    def setup_djtools_tab(self):
+        p = self.tab_dj
+        p.grid_columnconfigure(0, weight=1)
+        p.grid_rowconfigure(1, weight=1)
+        PADX = 24
+
+        # Header
+        hdr = ctk.CTkFrame(p, fg_color="transparent")
+        hdr.grid(row=0, column=0, sticky="ew", padx=PADX, pady=(22, 8))
+        self.lbl_dj_title = ctk.CTkLabel(
+            hdr, text="DJ TOOLS", font=(FONT, 14, "bold"), text_color=C["dim"])
+        self.lbl_dj_title.pack(side="left")
+        self.lbl_dj_pack_badge = ctk.CTkLabel(
+            hdr, text="", font=(FONT, 11), text_color=C["very_dim"])
+        self.lbl_dj_pack_badge.pack(side="right")
+
+        # Scrollable body so the page stays usable on short windows
+        body = ctk.CTkScrollableFrame(p, fg_color="transparent")
+        body.grid(row=1, column=0, sticky="nsew", padx=(PADX - 4), pady=(0, 12))
+        body.grid_columnconfigure(0, weight=1)
+
+        # ── DJ Pack banner (shown only when the pack is missing) ──────────────
+        self.dj_pack_frame = ctk.CTkFrame(
+            body, corner_radius=16, fg_color=C["card"],
+            border_width=1, border_color=C["border2"])
+        self.dj_pack_frame.grid(row=0, column=0, sticky="ew", pady=(4, 12))
+        self.dj_pack_frame.grid_columnconfigure(0, weight=1)
+        self.lbl_dj_pack_title = ctk.CTkLabel(
+            self.dj_pack_frame, text="🎚  DJ Pack required",
+            font=(FONT, 14, "bold"), text_color=C["bright"])
+        self.lbl_dj_pack_title.grid(row=0, column=0, sticky="w", padx=18, pady=(16, 2))
+        self.lbl_dj_pack_desc = ctk.CTkLabel(
+            self.dj_pack_frame, justify="left",
+            text=("Stem separation and BPM/key analysis run from an optional "
+                  "add-on that carries the AI models. Download it once."),
+            font=(FONT, 11), text_color=C["dim"], wraplength=560)
+        self.lbl_dj_pack_desc.grid(row=1, column=0, sticky="w", padx=18, pady=(0, 8))
+        self.dj_pack_progress = ctk.CTkProgressBar(self.dj_pack_frame, height=8)
+        self.dj_pack_progress.set(0)
+        # gridded on demand during download
+        self.btn_dj_pack = ctk.CTkButton(
+            self.dj_pack_frame, text="⬇  Download DJ Pack",
+            height=42, corner_radius=12, font=(FONT, 12, "bold"),
+            command=self.install_dj_pack)
+        self.btn_dj_pack.grid(row=3, column=0, sticky="ew", padx=18, pady=(2, 16))
+
+        # ── File picker ───────────────────────────────────────────────────────
+        self.btn_dj_select = ctk.CTkButton(
+            body, text="📁   Select an audio file",
+            height=50, corner_radius=14, font=(FONT, 13, "bold"),
+            command=self.select_dj_file)
+        self.btn_dj_select.grid(row=1, column=0, sticky="ew", pady=(0, 14))
+
+        # ── Stem separation card ──────────────────────────────────────────────
+        sep = ctk.CTkFrame(body, corner_radius=16, fg_color=C["card"],
+                           border_width=1, border_color=C["border2"])
+        sep.grid(row=2, column=0, sticky="ew", pady=(0, 12))
+        sep.grid_columnconfigure(0, weight=1)
+        self.lbl_dj_sep = ctk.CTkLabel(
+            sep, text="Stem separation", font=(FONT, 13, "bold"),
+            text_color=C["bright"])
+        self.lbl_dj_sep.grid(row=0, column=0, sticky="w", padx=16, pady=(14, 6))
+        self.dj_engine_menu = ctk.CTkOptionMenu(
+            sep, values=list(STEM_ENGINES.keys()), height=36,
+            corner_radius=10, font=(FONT, 11))
+        self.dj_engine_menu.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 8))
+        self.dj_engine_menu.set(getattr(self, "stem_engine", DEFAULT_STEM_ENGINE))
+        self.btn_dj_separate = ctk.CTkButton(
+            sep, text="✂   Separate stems", height=44, corner_radius=12,
+            font=(FONT, 12, "bold"), command=self.dj_separate_thread)
+        self.btn_dj_separate.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
+
+        # ── Analyze + tag card ────────────────────────────────────────────────
+        ana = ctk.CTkFrame(body, corner_radius=16, fg_color=C["card"],
+                           border_width=1, border_color=C["border2"])
+        ana.grid(row=3, column=0, sticky="ew", pady=(0, 12))
+        ana.grid_columnconfigure(0, weight=1)
+        self.lbl_dj_ana = ctk.CTkLabel(
+            ana, text="BPM + Key", font=(FONT, 13, "bold"),
+            text_color=C["bright"])
+        self.lbl_dj_ana.grid(row=0, column=0, sticky="w", padx=16, pady=(14, 2))
+        self.lbl_dj_result = ctk.CTkLabel(
+            ana, text="—", font=(FONT, 20, "bold"),
+            text_color=C["bright"])
+        self.lbl_dj_result.grid(row=1, column=0, sticky="w", padx=16, pady=(0, 8))
+        arow = ctk.CTkFrame(ana, fg_color="transparent")
+        arow.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
+        arow.grid_columnconfigure((0, 1), weight=1)
+        self.btn_dj_analyze = ctk.CTkButton(
+            arow, text="🎛   Analyze", height=44, corner_radius=12,
+            font=(FONT, 12, "bold"), command=self.dj_analyze_thread)
+        self.btn_dj_analyze.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+        self.btn_dj_tag = ctk.CTkButton(
+            arow, text="🏷   Write tags", height=44, corner_radius=12,
+            font=(FONT, 12, "bold"),
+            fg_color=C["btn_sec"], hover_color=C["btn_sec_hov"],
+            text_color=C["bright"], command=self.dj_write_tags)
+        self.btn_dj_tag.grid(row=0, column=1, sticky="ew", padx=(6, 0))
+
+        # ── DJ export ─────────────────────────────────────────────────────────
+        exp = ctk.CTkFrame(body, corner_radius=16, fg_color=C["card"],
+                           border_width=1, border_color=C["border2"])
+        exp.grid(row=4, column=0, sticky="ew", pady=(0, 12))
+        exp.grid_columnconfigure(0, weight=1)
+        self.lbl_dj_exp = ctk.CTkLabel(
+            exp, text="Export to DJ software", font=(FONT, 13, "bold"),
+            text_color=C["bright"])
+        self.lbl_dj_exp.grid(row=0, column=0, sticky="w", padx=16, pady=(14, 2))
+        self.lbl_dj_exp_desc = ctk.CTkLabel(
+            exp, text="Save your library as an .m3u8 playlist "
+                      "(Rekordbox · Serato · Traktor · VirtualDJ).",
+            font=(FONT, 11), text_color=C["dim"], wraplength=560, justify="left")
+        self.lbl_dj_exp_desc.grid(row=1, column=0, sticky="w", padx=16, pady=(0, 8))
+        self.btn_dj_export = ctk.CTkButton(
+            exp, text="📤   Export library (.m3u8)", height=44, corner_radius=12,
+            font=(FONT, 12, "bold"),
+            fg_color=C["btn_sec"], hover_color=C["btn_sec_hov"],
+            text_color=C["bright"], command=self.dj_export_m3u8)
+        self.btn_dj_export.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 16))
+
+        # ── Status + progress ─────────────────────────────────────────────────
+        self.dj_progress = ctk.CTkProgressBar(body, height=8)
+        self.dj_progress.set(0)
+        self.dj_progress.grid(row=5, column=0, sticky="ew", pady=(2, 4))
+        self.dj_progress.grid_remove()
+        self.lbl_dj_status = ctk.CTkLabel(
+            body, text="", font=(FONT, 11), text_color=C["dim"],
+            wraplength=600, justify="left")
+        self.lbl_dj_status.grid(row=6, column=0, sticky="w", pady=(2, 8))
+
+        self._refresh_dj_pack_ui()
 
     # ── Scroll isolation ──────────────────────────────────────────────────────
 

@@ -91,9 +91,16 @@ class DownloaderMixin:
                 self._run_queued_download(item)
                 item["status"]   = "done"
                 item["progress"] = 100
-                self.download_history.append(self._history_entry(item))
+                entry = self._history_entry(item)
+                self.download_history.append(entry)
                 self.save_data_to_disk()
                 self.after(0, self.refresh_library_ui)
+                # Optional: auto BPM/key analysis + tagging (needs the DJ Pack).
+                if getattr(self, "auto_analyze", False):
+                    try:
+                        self._maybe_auto_analyze(item, entry)
+                    except Exception as _e:
+                        print(f"[Queue] auto-analyze skipped: {_e}")
                 if item.get("pp_warning"):
                     done_msg = self.t("dl_done_nocover",
                                       "✅  Downloaded · cover art skipped")

@@ -7,7 +7,7 @@
 
 #define AppName       "Drag2Music"
 #define AppShortName  "Drag2Music"
-#define AppVersion    "3.1.0"
+#define AppVersion    "3.2.0"
 #define AppPublisher  "Ali A."
 #define AppURL        "https://github.com/AliAli2155/Drag2Music"
 #define AppExeName    "Drag2Music.exe"

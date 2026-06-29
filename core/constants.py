@@ -1,7 +1,7 @@
 import sys
 
 # ── App version (keep in sync with installer scripts) ────────────────────────
-APP_VERSION = "3.1.0"
+APP_VERSION = "3.2.0"
 
 # ── Platform-native UI font ──────────────────────────────────────────────────
 # Tk silently falls back to a default if the family is missing, so this is safe.
@@ -39,6 +39,35 @@ LOUDNESS_PRESETS = {
 
 # Standard sample rate for a DJ-friendly, consistent library
 TARGET_SAMPLE_RATE = 44100
+
+# ── DJ Tools: stem separation engines ────────────────────────────────────────
+# These run inside the optional "DJ Pack" (a separate, downloadable worker that
+# carries the heavy ML stack). The base app never imports torch/onnxruntime —
+# it shells out to the worker, exactly like it does for ffmpeg.
+STEM_ENGINES = {
+    # label shown in the UI -> (worker engine id, number of stems)
+    "2 stem · Vocals + Instrumental (fast)": ("onnx",   2),
+    "4 stem · Drums/Bass/Vocals/Other (HQ)": ("demucs", 4),
+}
+DEFAULT_STEM_ENGINE = "2 stem · Vocals + Instrumental (fast)"
+
+# ── DJ Pack (optional, downloaded on demand — like ffmpeg) ────────────────────
+# Pack version is independent of APP_VERSION so the heavy pack can be re-rolled
+# without forcing an app release. The per-platform archive is published as a
+# GitHub Release asset and fetched into the user's data dir on first use.
+DJ_PACK_VERSION = "1.0.0"
+DJ_PACK_RELEASE_TAG = "djpack-v1.0.0"
+DJ_PACK_BASE_URL = (
+    "https://github.com/AliAli2155/Drag2Music/releases/download/" + DJ_PACK_RELEASE_TAG
+)
+# Asset name per platform (built by .github/workflows + dj_pack/build_*).
+DJ_PACK_ASSETS = {
+    "win32":  "Drag2Music-DJPack-windows.zip",
+    "darwin": "Drag2Music-DJPack-macos.zip",
+    "linux":  "Drag2Music-DJPack-linux.zip",
+}
+# Worker executable name inside the extracted pack (no extension on POSIX).
+DJ_WORKER_NAME = "d2m-dj-worker"
 
 THEME_COLORS = [
     ("Spotify Green", "#1DB954"),

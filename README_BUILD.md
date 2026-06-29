@@ -73,7 +73,7 @@ The script:
 
 ---
 
-### Linux — produces `Drag2Music-x86_64.AppImage` **and** `drag2music_3.1.0_amd64.deb`
+### Linux — produces `Drag2Music-x86_64.AppImage` **and** `drag2music_3.2.0_amd64.deb`
 
 ```bash
 chmod +x build_scripts/build_linux.sh

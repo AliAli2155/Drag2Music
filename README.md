@@ -5,7 +5,7 @@
 **Search · Download · Convert · Lyrics — a complete music downloader for your desktop**
 
 [![Build](https://github.com/AliAli2155/Drag2Music/actions/workflows/build.yml/badge.svg)](https://github.com/AliAli2155/Drag2Music/actions/workflows/build.yml)
-[![Version](https://img.shields.io/badge/version-3.1.0-1DB954)](https://github.com/AliAli2155/Drag2Music/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.2.0-1DB954)](https://github.com/AliAli2155/Drag2Music/releases/latest)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](#download)
@@ -33,7 +33,7 @@
 | 🪟 Windows | [Drag2Music_Setup.exe](https://github.com/AliAli2155/Drag2Music/releases/latest/download/Drag2Music_Setup.exe) | One-click installer — no Python required |
 | 🍎 macOS | [Drag2Music.dmg](https://github.com/AliAli2155/Drag2Music/releases/latest/download/Drag2Music.dmg) | Drag & drop to Applications |
 | 🐧 Linux | [Drag2Music-x86_64.AppImage](https://github.com/AliAli2155/Drag2Music/releases/latest/download/Drag2Music-x86_64.AppImage) | Single file, runs on any distro |
-| 🐧 Linux | [drag2music_3.1.0_amd64.deb](https://github.com/AliAli2155/Drag2Music/releases/latest/download/drag2music_3.1.0_amd64.deb) | Debian / Ubuntu package |
+| 🐧 Linux | [drag2music_3.2.0_amd64.deb](https://github.com/AliAli2155/Drag2Music/releases/latest/download/drag2music_3.2.0_amd64.deb) | Debian / Ubuntu package |
 
 > **Fully self-contained** — Python runtime, ffmpeg, and all libraries are bundled inside. Nothing else to install.
 
@@ -135,7 +135,7 @@ Drag2Music/
 
 ## Building
 
-All three platforms build automatically via **GitHub Actions**. Pushing a `v*` tag (e.g. `v3.1.0`) builds the installers and publishes a GitHub Release. For local builds see [README_BUILD.md](README_BUILD.md).
+All three platforms build automatically via **GitHub Actions**. Pushing a `v*` tag (e.g. `v3.2.0`) builds the installers and publishes a GitHub Release. For local builds see [README_BUILD.md](README_BUILD.md).
 
 ```bat
 # Windows  (needs Inno Setup 6 for the installer)

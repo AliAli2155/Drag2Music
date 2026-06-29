@@ -103,6 +103,12 @@ a = Analysis(
         "core.downloader",
         "core.lyrics",
         "core.converter",
+        "core.dj_tools",
+        "core.dj_pack",
+        "core.stems",
+        "core.music_analysis",
+        "core.tagger",
+        "core.dj_export",
         # stdlib extras sometimes missed
         "pkg_resources",
         "pkg_resources.py2_warn",
@@ -186,8 +192,8 @@ if sys.platform == "darwin":
         bundle_identifier="com.ali.drag2music",
         info_plist={
             "CFBundleDisplayName":        "Drag2Music",
-            "CFBundleShortVersionString":  "3.1.0",
-            "CFBundleVersion":            "3.1.0",
+            "CFBundleShortVersionString":  "3.2.0",
+            "CFBundleVersion":            "3.2.0",
             "NSHighResolutionCapable":    True,
             "NSRequiresAquaSystemAppearance": False,
             "LSMinimumSystemVersion":     "10.14.0",

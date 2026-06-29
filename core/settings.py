@@ -109,6 +109,24 @@ class SettingsMixin:
             wraplength=230).pack(padx=16, pady=(3, 0))
 
         ctk.CTkFrame(inner, height=1, fg_color=C["border"]).pack(fill="x", padx=14, pady=8)
+        ctk.CTkLabel(inner, text=t.get("dj_section", "DJ Tools"),
+                     font=(FONT, 11, "bold"), text_color=C["dim"]).pack()
+        self._auto_analyze_switch = ctk.CTkSwitch(
+            inner, text=t.get("auto_analyze_label", "Auto BPM + key on download"),
+            font=(FONT, 11), command=self._toggle_auto_analyze)
+        self._auto_analyze_switch.pack(fill="x", padx=18, pady=(8, 0))
+        if getattr(self, "auto_analyze", False):
+            self._auto_analyze_switch.select()
+        else:
+            self._auto_analyze_switch.deselect()
+        ctk.CTkLabel(
+            inner,
+            text=t.get("auto_analyze_hint",
+                       "Tags each download with BPM/key · needs the DJ Pack"),
+            font=(FONT, 9), text_color=C["very_dim"],
+            wraplength=230).pack(padx=16, pady=(3, 0))
+
+        ctk.CTkFrame(inner, height=1, fg_color=C["border"]).pack(fill="x", padx=14, pady=8)
         ctk.CTkLabel(inner, text=t["settings_theme"],
                      font=(FONT, 11, "bold"), text_color=C["dim"]).pack()
         for n, h in THEME_COLORS:
@@ -185,6 +203,11 @@ class SettingsMixin:
 
     def _set_loudness_choice(self, value):
         self.loudness_choice = value
+        self.save_data_to_disk()
+
+    def _toggle_auto_analyze(self):
+        sw = getattr(self, "_auto_analyze_switch", None)
+        self.auto_analyze = bool(sw.get()) if sw is not None else False
         self.save_data_to_disk()
 
     def _set_app_appearance_mode(self, value):
@@ -274,7 +297,9 @@ class SettingsMixin:
                 except Exception:
                     pass
 
-        for name in ("btn_search", "btn_path", "btn_download", "btn_conv_select"):
+        for name in ("btn_search", "btn_path", "btn_download", "btn_conv_select",
+                     "btn_dj_select", "btn_dj_separate", "btn_dj_analyze",
+                     "btn_dj_pack"):
             w = getattr(self, name, None)
             if w:
                 try:
@@ -282,7 +307,8 @@ class SettingsMixin:
                 except Exception:
                     pass
 
-        for name in ("progress_bar", "progress_bar_pl"):
+        for name in ("progress_bar", "progress_bar_pl", "dj_progress",
+                     "dj_pack_progress"):
             w = getattr(self, name, None)
             if w:
                 try:
@@ -304,7 +330,7 @@ class SettingsMixin:
                 w.configure(selected_color=color, selected_hover_color=hover)
             except Exception:
                 pass
-        for name in ("mode_menu", "quality_combo"):
+        for name in ("mode_menu", "quality_combo", "dj_engine_menu"):
             w = getattr(self, name, None)
             if w:
                 try:
@@ -378,6 +404,31 @@ class SettingsMixin:
         _safe("lbl_conv_quality_label", text=t["conv_quality_label"])
         _safe("btn_conv_run",       text=t["conv_run"])
 
+        # ── DJ Tools page ─────────────────────────────────────────────────────
+        _safe("lbl_dj_title",       text=t.get("dj_title", "DJ TOOLS"))
+        _safe("lbl_dj_pack_title",  text=t.get("dj_pack_title", "🎚  DJ Pack required"))
+        _safe("lbl_dj_pack_desc",   text=t.get("dj_pack_desc",
+              "Stem separation and BPM/key analysis run from an optional "
+              "add-on that carries the AI models. Download it once."))
+        _safe("btn_dj_pack",        text=t.get("dj_pack_download_btn", "⬇  Download DJ Pack"))
+        _safe("lbl_dj_sep",         text=t.get("dj_sep_label", "Stem separation"))
+        _safe("btn_dj_separate",    text=t.get("dj_separate_btn", "✂   Separate stems"))
+        _safe("lbl_dj_ana",         text=t.get("dj_ana_label", "BPM + Key"))
+        _safe("btn_dj_analyze",     text=t.get("dj_analyze_btn", "🎛   Analyze"))
+        _safe("btn_dj_tag",         text=t.get("dj_tag_btn", "🏷   Write tags"))
+        _safe("lbl_dj_exp",         text=t.get("dj_exp_label", "Export to DJ software"))
+        _safe("lbl_dj_exp_desc",    text=t.get("dj_exp_desc",
+              "Save your library as an .m3u8 playlist "
+              "(Rekordbox · Serato · Traktor · VirtualDJ)."))
+        _safe("btn_dj_export",      text=t.get("dj_export_btn", "📤   Export library (.m3u8)"))
+        if not getattr(self, "dj_selected_file", ""):
+            _safe("btn_dj_select",  text=t.get("dj_select_btn", "📁   Select an audio file"))
+        if hasattr(self, "dj_pack_frame"):
+            try:
+                self._refresh_dj_pack_ui()
+            except Exception:
+                pass
+
         if self._pending_playlist is None:
             _safe("btn_download", text=t["main_btn"])
         if not self.current_video_url:
@@ -445,6 +496,13 @@ class SettingsMixin:
             meta = []
             if item.get("quality"):
                 meta.append(str(item["quality"]))
+            if item.get("bpm"):
+                try:
+                    meta.append(f"{float(item['bpm']):.0f} BPM")
+                except (TypeError, ValueError):
+                    pass
+            if item.get("camelot") or item.get("key"):
+                meta.append(str(item.get("camelot") or item.get("key")))
             size_s = self._fmt_size(item.get("size"))
             if size_s:
                 meta.append(size_s)
@@ -497,6 +555,8 @@ class SettingsMixin:
                     "mode":          self.current_mode,
                     "loudness":      getattr(self, "loudness_choice", "Off"),
                     "sample_rate":   getattr(self, "target_sr", 44100),
+                    "stem_engine":   getattr(self, "stem_engine", ""),
+                    "auto_analyze":  bool(getattr(self, "auto_analyze", False)),
                     "download_path": self.download_path,
                 }, f, ensure_ascii=False, indent=2)
             os.replace(tmp, self.history_file)

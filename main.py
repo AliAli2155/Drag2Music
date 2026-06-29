@@ -49,10 +49,12 @@ from core.downloader   import DownloaderMixin
 from core.settings     import SettingsMixin
 from core.lyrics       import LyricsMixin
 from core.converter    import ConverterMixin
+from core.dj_tools     import DJToolsMixin
 
 
 class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
-                 SettingsMixin, LyricsMixin, ConverterMixin, ctk.CTk):
+                 SettingsMixin, LyricsMixin, ConverterMixin, DJToolsMixin,
+                 ctk.CTk):
 
     def __init__(self):
         self.history_file = os.path.join(os.path.expanduser("~"), ".drag2music_history.json")
@@ -82,6 +84,14 @@ class Drag2Music(UISetupMixin, AnalyzerMixin, DownloaderMixin,
         _loud                    = saved_data.get("loudness", "Off")
         self.loudness_choice     = _loud if _loud in _LP else "Off"
         self.target_sr           = saved_data.get("sample_rate", _SR)
+
+        # ── DJ Tools state ───────────────────────────────────────────────────────
+        from core.constants import STEM_ENGINES as _SE, DEFAULT_STEM_ENGINE as _DSE
+        _stem                    = saved_data.get("stem_engine", _DSE)
+        self.stem_engine         = _stem if _stem in _SE else _DSE
+        self.auto_analyze        = bool(saved_data.get("auto_analyze", False))
+        self.dj_selected_file    = ""
+        self._dj_last_analysis   = {}
 
         self.current_video_url   = ""
         self.current_video_title = ""

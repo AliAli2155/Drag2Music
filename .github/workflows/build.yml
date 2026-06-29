@@ -126,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Drag2Music-Linux-deb
-          path: drag2music_3.1.0_amd64.deb
+          path: drag2music_3.2.0_amd64.deb
 
   # ─────────────────────────────────────────────
   #  Release  (sadece tag push'unda çalışır)
@@ -150,5 +150,5 @@ jobs:
             artifacts/Drag2Music-Windows/Drag2Music_Setup.exe
             artifacts/Drag2Music-macOS/Drag2Music.dmg
             artifacts/Drag2Music-Linux-AppImage/Drag2Music-x86_64.AppImage
-            artifacts/Drag2Music-Linux-deb/drag2music_3.1.0_amd64.deb
+            artifacts/Drag2Music-Linux-deb/drag2music_3.2.0_amd64.deb
           generate_release_notes: true

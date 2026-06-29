@@ -1,0 +1,26 @@
+# Heavy ML stack for the optional DJ Pack worker (d2m-dj-worker).
+# These are intentionally NOT in the app's root requirements.txt — the base app
+# never imports them. Install into a *separate* environment to build the pack:
+#
+#   python -m venv .venv-djpack
+#   .venv-djpack/Scripts/pip install -r dj_pack/requirements.txt
+#   # CPU-only torch keeps the pack small; pull it from the CPU wheel index:
+#   .venv-djpack/Scripts/pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   python dj_pack/build_djpack.py
+#
+# BPM + key
+numpy>=1.24
+librosa>=0.10.1
+soundfile>=0.12.1
+
+# 2-stem (vocals + instrumental) — onnxruntime backend, much lighter than torch
+audio-separator>=0.18.0
+onnxruntime>=1.17.0
+
+# 4-stem (drums/bass/vocals/other)
+demucs>=4.0.1
+# torch is installed separately (CPU wheel index — see header) so this file
+# stays index-agnostic. Pin if you need reproducibility:
+# torch>=2.1.0
+
+pyinstaller>=6.0.0

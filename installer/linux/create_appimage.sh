@@ -11,7 +11,7 @@ PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$PROJECT_ROOT"
 
 APP_NAME="Drag2Music"
-APP_VERSION="3.1.0"
+APP_VERSION="3.2.0"
 ARCH="x86_64"
 DIST_DIR="dist/${APP_NAME}"
 APPIMAGE_OUT="${APP_NAME}-${ARCH}.AppImage"
